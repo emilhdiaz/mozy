@@ -2,7 +2,6 @@
 namespace Mozy\Core\Test;
 
 use Mozy\Core;
-use Mozy\Core\Console;
 use Mozy\Core\ApplicationContext;
 use Mozy\Core\Object;
 
@@ -21,12 +20,20 @@ class TestReport extends Object {
 
         $unitTest = $this->unitTest;
 
-        Console::println(' ');
-        Console::println( Console::inColor('dark_gray', '##################################################################################################'));
-        Console::println( Console::inColor('white', ' Mozy Framework ' . $framework->version . ' - Unit Testing' ) );
-        Console::println( Console::inColor('white', ' (c) Copywrite of Mozy Framework. All rights reserved.') );
-        Console::println( Console::inColor('dark_gray', '##################################################################################################'));
-        Console::println(' ');
+        $output = $framework->console->output;
+
+        $output->overrides(PASSED, 'bold', 'green');
+        $output->overrides(FAILED, 'bold', 'red');
+        $output->overrides(PENDING, 'bold', 'yellow');
+        $output->overrides(SKIPPED, 'bold', 'green');
+        $output->overrides(INCOMPLETE, 'bold', 'magenta');
+
+        $output->nl();
+        $output->line('##################################################################################################', 'bold', 'black');
+        $output->line(' Mozy Framework ' . $framework->version . ' - Unit Testing', 'bold', 'white');
+        $output->line(' (c) Copywrite of Mozy Framework. All rights reserved.', 'bold', 'white');
+        $output->line('##################################################################################################', 'bold', 'black');
+        $output->nl();
 
         #TODO: add something indicating what options are used and what namespaces were tested
 
@@ -40,26 +47,26 @@ class TestReport extends Object {
         $incompleteTestCases = $unitTest->getIncompleteTestCases();
 
         if( $skippedTestScenarios + $skippedTestCases + $incompleteTestScenarios + $incompleteTestCases )
-            Console::println( Console::inColor('yellow', 'Warnings:') );
+            $output->line('Warnings:', 0, 'yellow');
 
         if( count($skippedTestScenarios) > 0) {
-            Console::println( ' The following Test Scenarios were skipped: ');
-            Console::printByLine($skippedTestScenarios);
+            $output->line(' The following Test Scenarios were skipped: ', null, 'yellow');
+            $output->each($skippedTestScenarios, '  -');
         }
 
         if( count($skippedTestCases) > 0) {
-            Console::println( ' The following Test Cases were skipped: ');
-            Console::printByLine($skippedTestCases);
+            $output->line(' The following Test Cases were skipped: ', null, 'yellow');
+            $output->each($skippedTestCases, '  -');
         }
 
         if( count($incompleteTestScenarios) > 0) {
-            Console::println( ' The following Test Scenarios were incomplete: ');
-            Console::printByLine($incompleteTestScenarios);
+            $output->line(' The following Test Scenarios were incomplete: ', null, 'yellow');
+            $output->each($incompleteTestScenarios, '  -');
         }
 
         if( count($incompleteTestCases) > 0) {
-            Console::println( ' The following Test Cases were incomplete: ');
-            Console::printByLine($incompleteTestCases, '  -');
+            $output->line(' The following Test Cases were incomplete: ', null, 'yellow');
+            $output->each($incompleteTestCases, '  -');
         }
 
         // TEST SCENARIOS
@@ -77,21 +84,20 @@ class TestReport extends Object {
             $total = $passed + $failed;
             $totalAssertions = $passedAssertions + $failedAssertions;
 
-            Console::println('__________________________________________________________________________________________________');
-            Console::println( Console::inColor('bold_cyan', ' Test Scenario ' . $testScenario->name) . ' - ' . colorResult($testScenario->result) );
+            $output->line('__________________________________________________________________________________________________');
+            $output->text(' Test Scenario ' . $testScenario->name, 'bold', 'cyan');
+            $output->text(' - ' . $testScenario->result);
+            $output->nl();
 
             if( $testScenario->result == PASSED || $testScenario->result == FAILED ) {
-                Console::println(
-                    Console::inColor('dark_gray',
+                $output->line(
                     ' Test Cases('. $total .': '. $passed .' PASSED / '. $failed .' FAILED / '. $skipped .' SKIPPED / '. $incomplete .' INCOMPLETE), '
-                    .'Assertions('. $totalAssertions .': '. $passedAssertions .' PASSED / '. $failedAssertions .' FAILED)'
-                    )
+                    .'Assertions('. $totalAssertions .': '. $passedAssertions .' PASSED / '. $failedAssertions .' FAILED)',
+                    'bold', 'black'
                 );
             }
             else {
-                Console::println(
-                    ' ' . Console::inColor('dark_gray',  $testScenario->message)
-                );
+               $output->line(' ' . $testScenario->message, 'bold', 'black');
             }
 
             // check reporting mode
@@ -115,21 +121,20 @@ class TestReport extends Object {
                 $total = $passed + $failed;
                 $totalAssertions = $passedAssertions + $failedAssertions;
 
-                Console::println(' ');
-                Console::println( Console::inColor('bold_blue', ' + Test Case #' . $testCase->shortName) . ' - '. colorResult($testCase->result) );
+                $output->nl();
+                $output->text(' + Test Case #' . $testCase->shortName, 'bold', 'blue');
+                $output->text(' - '. $testCase->result);
+                $output->nl();
 
                 if( $testCase->result == PASSED || $testCase->result == FAILED ) {
-                    Console::println(
-                        '   ' . Console::inColor('dark_gray',
-                        'Tests('. $total .': '. $passed .' PASSED / '. $failed .' FAILED), '
-                        .'Assertions('. $totalAssertions .': '. $passedAssertions .' PASSED / '. $failedAssertions .' FAILED)'
-                        )
+                    $output->line(
+                        '   Tests('. $total .': '. $passed .' PASSED / '. $failed .' FAILED), '
+                        .'Assertions('. $totalAssertions .': '. $passedAssertions .' PASSED / '. $failedAssertions .' FAILED)',
+                        'bold', 'black'
                     );
                 }
                 else {
-                    Console::println(
-                        '   ' . Console::inColor('dark_gray',  $testCase->message)
-                    );
+                    $output->line('   ' . $testCase->message, 'bold', 'black');
                 }
 
                 // TESTS
@@ -138,41 +143,25 @@ class TestReport extends Object {
                     if( ($test->result == PASSED) && ($this->reportAll == false) )
                         return;
 
-                    Console::println(
-                        '    -> ' . Console::inColor('cyan', $test->name) . ' - ' . colorResult($test->result) . ' - ' .
-                        Console::inColor('dark_gray',
+                    $output->text('    -> ');
+                    $output->text($test->name, null, 'cyan');
+                    $output->text(' - ' . $test->result . ' - ');
+                    $output->text(
+                        (
                             $test->failure ?
                             $test->failure->getMessage() :
-                            'Assertions(' . count($test->getPassed()) . ')'
-                        )
+                                'Assertions(' . count($test->getPassed())
+                        ) . ')', 'bold', 'black'
                     );
+                    $output->nl();
                 }
             }
         }
 
-        Console::println(' ');
-        Console::println('Test Complete.');
-        Console::println(' ');
-    }
-}
-function colorResult($result) {
-    switch($result) {
-        case PASSED:
-            return Console::inColor('bold_green', $result);
-            break;
-
-        case FAILED:
-            return Console::inColor('bold_red', $result);
-            break;
-
-        case PENDING:
-        case SKIPPED:
-            return Console::inColor('yellow', $result);
-            break;
-
-        case INCOMPLETE:
-            return Console::inColor('purple', $result);
-            break;
+        $output->nl();
+        $output->line('Test Complete.');
+        $output->nl();
+        $output->send();
     }
 }
 ?>

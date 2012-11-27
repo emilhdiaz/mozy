@@ -29,7 +29,9 @@ final class Framework extends Object implements Singleton {
     private static $self;
     protected $version = 1.0;
     protected $server;
+    protected $console;
     protected $application;
+    protected $allowSubprocess = [];
 
     protected function __construct() {
         // configure Class Path & Autoloaders
@@ -43,12 +45,20 @@ final class Framework extends Object implements Singleton {
         $autoloader->registerLoader( TestLoader::construct() );
 
         $this->server = Server::construct();
+        $this->console = Console::construct();
     }
 
     public static function init() {
         global $framework;
+
+        // bootstrap the PHP environment
         self::bootstrap();
+
+        // initialize the framework
         $framework = self::construct();
+
+        // write the PID
+        $framework->console->output->line("PHP Process (".getmypid().")")->send();
     }
 
     public static function bootstrap() {
@@ -99,14 +109,16 @@ final class Framework extends Object implements Singleton {
     public function processExchange() {
         switch( $this->gateway ) {
             case 'CLI':
-                $request = ConsoleRequest::construct();
+                $request = ConsoleRequest::current();
                 break;
 
             case 'CGI':
                 break;
         }
 
-        $this->executeTarget($request->api, $request->action, $request->arguments);
+        $this->allowSubprocess = (bool) (array_value($request->arguments, 'allowSubprocess') === true);
+
+        $this->executeTarget($request->api, $request->action, $request->arguments, $request->format);
     }
 
     public function registerClassPath( $classPath ) {
@@ -124,7 +136,7 @@ final class Framework extends Object implements Singleton {
     public function getGateway() {
         return defined('STDIN') ? 'CLI' : 'CGI';
     }
-    
+
     public function getEndpoint() {
         switch( $this->gateway ) {
             case 'CLI':
@@ -133,10 +145,10 @@ final class Framework extends Object implements Singleton {
 
             case 'CGI':
                 break;
-        }        
+        }
     }
 
-    public function executeTarget($api, $action, $arguments, $separateProcess = false) {
+    public function executeTarget($api, $action, $arguments, $format = null, $separateProcess = false) {
         $api = 'Mozy\APIs\\'.$api.'API';
 
         if( !ReflectionClass::exists($api) ) {
@@ -157,35 +169,39 @@ final class Framework extends Object implements Singleton {
         foreach( $method->getParameters() as $parameter ) {
             #TODO check argument types
             $value = array_value($arguments, $parameter->name) ?: array_value($arguments, $parameter->getPosition());
-            
+
             // check if value is required
             if( !$value && !$parameter->isDefaultValueAvailable() )
                 #TODO throw API level exception
                 throw new Exception($parameter);
-                
+
             // dont need to add to command line arguments
             if( !$value && $separateProcess )
                 continue;
-            
+
             $parameters[$parameter->name] = $value;
         }
 
-        if( $separateProcess ) {
-            $command = 'php '. $this->endpoint . ' ' . $api->name . ' ' . $action . ' ' . implode_assoc( $parameters, ' ', '--', ' ' );
-            var_dump($command);
-            
-            exec($command, $output, $exitCode);
-            var_dump($output);
-            var_dump($exitCode);
+        ################################################################################
+        # VERY DANGEROUS!! Ensure this does not cause an endless loop of child processes
+        ################################################################################
+        if( $separateProcess && !$this->allowSubprocess ) {
+            #TODO throw API level exception
+            throw new Exception("Subprocesses not allowed!");
         }
-            
-        else { 
+
+        if( $separateProcess ) {
+            $request = ConsoleRequest::construct($this->endpoint, $api->name, $action, $parameters);
+            $response = $request->send();
+#            $result = $response->result;
+        }
+        else {
             $result = $method->invokeArgs($api, $parameters);
         }
     }
 
     public function printErrorReportingLevels() {
-        Console::println(FriendlyErrorType(error_reporting()));
+        $this->console->output->line(FriendlyErrorType(error_reporting()))->send();
     }
 }
 
@@ -264,21 +280,23 @@ function errorHandler($errno, $errstr, $errfile, $errline, $errcontext) {
             exceptionHandler(new UndefinedConstantException($errstr, null, $errfile, $errline));
     }
 
-    Console::println( Console::inColor('bold_red', "UNHANDLED ERROR: ") . FriendlyErrorType($errno) ."- $errstr file $errfile on line $errline \n" );
+    print("UNHANDLED ERROR: " . FriendlyErrorType($errno) ."- $errstr file $errfile on line $errline \n");
     die();
 }
 
 function exceptionHandler(\Exception $exception) {
+
     if( $exception instanceOf SemanticException ) {
-        Console::println( Console::inColor('bold_red', $exception) );
+        print($exception);
     }
     elseif( $exception instanceOf Exception ) {
-        Console::println( Console::inColor('bold_red', $exception) );
-        Console::println($exception->getStackTrace());
+        print($exception);
+        print($exception->getStackTrace());
     }
     else {
-        Console::println( Console::inColor('bold_red', $exception) );
+        print($exception);
     }
+
     die();
 }
 

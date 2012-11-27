@@ -54,6 +54,10 @@ abstract class TestScenario extends Object implements Singleton, Testable {
         return $this->name;
     }
 
+    public function __sleep() {
+        return ['testCases','result','message'];
+    }
+
     public function setUp() {
         $this->fixture = new \StdClass;
         return $this;

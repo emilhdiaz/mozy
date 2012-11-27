@@ -3,40 +3,60 @@ namespace Mozy\Core;
 
 class ConsoleRequest extends ExchangeRequest {
 
-    protected function __construct() {
+    protected function __construct($endpoint, $api, $action, $arguments = [], $format = 'serialized') {
+        parent::__construct($endpoint, $api, $action, $arguments, $format);
+    }
+
+    public function send() {
+        $command = Console::command($this->endpoint, $this->api, $this->action, $this->arguments, $this->format);
+        var_dump($command);
+
+        exec($command, $output, $exitCode);
+        var_dump($output);
+        var_dump($exitCode);
+    }
+
+    public static function current() {
         $command = implode(' ', $_SERVER['argv']);
         $command = explode('--', $command);
 
-        $target  = explode(' ' , trim(array_shift($command)));
-        $this->script       = array_shift($target);
-        $this->api          = array_shift($target);
-        $this->action       = array_shift($target);
+        $target     = explode(' ' , trim(array_shift($command)));
+        $endpoint   = array_shift($target);
+        $api        = array_shift($target);
+        $action     = array_shift($target);
 
-        $this->arguments = [];
+        $arguments  = [];
         if( count($target) == 1 )
-            $this->arguments[] = $target[0];
+            $arguments[] = $target[0];
 
         elseif( count($target) == 0 )
-            $this->arguments[] = null;
+            $arguments[] = null;
 
         else
-            $this->arguments[] = $target;
+            $arguments[] = $target;
 
         foreach($command as $option) {
-            $option = preg_split('/[ =:]/', trim($option));
+            $option = preg_split('/[ =]/', trim($option));
             $optionName = camelCase(array_shift($option));
 
             if( count($option) == 1 )
-                $this->arguments[$optionName] = $option[0];
+                $arguments[$optionName] = $option[0];
 
             elseif( count($option) == 0 )
-                $this->arguments[$optionName] = true;
+                $arguments[$optionName] = true;
 
             else
-                $this->arguments[$optionName] = $option;
+                $arguments[$optionName] = $option;
         }
 
-        $this->format = array_value($this->arguments, 'format');
+        if( $format = array_value($arguments, 'format') )
+            unset($arguments['format']);
+        else
+            $format = 'none';
+
+        self::convert($arguments, $format);
+
+        return static::construct($endpoint, $api, $action, $arguments, $format);
     }
 }
 ?>

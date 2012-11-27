@@ -145,10 +145,10 @@ function implode_assoc( array $array, $glue = '', $prefix = '', $postfix = '' ) 
     foreach($array as $key=>$value) {
         // check if string key
         $string .= (is_string($key) ? $prefix . $key . $postfix : '');
-        
+
         // check if value is array
         $string .= (is_array($value) ? implode_assoc($value, $glue) :  "'". $value . "'");
-        
+
         $string .= ' ';
     }
     return $string;
@@ -199,7 +199,7 @@ function _S( $object = null ) {
         }
         else {
             foreach( $object as $key=>$value ) {
-                if( is_array($value) ) $object[$key] = printArray($value);
+                if( is_array($value) ) $object[$key] = _S($value);
                 if( is_object($value) ) $object[$key] = get_class($value);
                 if( is_string($value) && strlen($value) > 15 ) $object[$key] = substr($value, 0, 15) . '...';
             }
@@ -218,8 +218,10 @@ function _S( $object = null ) {
     if( is_object($object) )
         return $object->__toString();
 
-    if( is_null($object) )
+    if( is_null($object) ) {
+        var_dump($object);
         return '<null>';
+    }
 
     if( $object === true )
         return '<true>';

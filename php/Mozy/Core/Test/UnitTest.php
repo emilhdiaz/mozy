@@ -3,6 +3,7 @@ namespace Mozy\Core\Test;
 
 use Mozy\Core;
 use Mozy\Core\Object;
+use Mozy\Core\Singleton;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
@@ -13,7 +14,7 @@ const SKIPPED   = 'SKIPPED';
 const IGNORED   = 'IGNORED';
 const INCOMPLETE= 'INCOMPLETE';
 
-class UnitTest extends Object implements Testable {
+class UnitTest extends Object implements Singleton, Testable {
 
     const TestScenarioNameRegex     = '/(\S*)(\w+Test)$/';
 
@@ -25,6 +26,7 @@ class UnitTest extends Object implements Testable {
     // options
     protected $defaultNamespace;
     protected $stopOnFailure;
+    protected $separateProcess;
 
     protected $filterGroups;            // scenario
     protected $filterGroupsPattern;     // scenario
@@ -41,8 +43,9 @@ class UnitTest extends Object implements Testable {
     protected $excludedScenarios;       // tester
     protected $excludedScenariosPattern;// tester
 
-    protected function __construct($stopOnFailure = false) {
+    protected function __construct($stopOnFailure = false, $separateProcess = false) {
         $this->stopOnFailure = (bool) $stopOnFailure;
+        $this->separateProcess = (bool) $separateProcess;
     }
 
     public function __toString() {
@@ -92,12 +95,16 @@ class UnitTest extends Object implements Testable {
 
     public function run() {
         global $framework;
-        
+
         foreach($this->testScenarios as $testScenario) {
-            
+
             // run test scenario
-#            $testScenario->run();
-            $framework->executeTarget('UnitTest', 'testScenario', ['scenario'=>$testScenario->name, 'report'=>'all'], true);
+            if( $this->separateProcess ) {
+                $testScenario = $framework->executeTarget('UnitTest', 'testScenario', ['scenario'=>$testScenario->name, 'report'=>'all'], 'native', true);
+            }
+
+            else
+                $testScenario->run();
 
             // check if scenario has failed
             if( ($testScenario->result == FAILED) && ($this->stopOnFailure) ) {
