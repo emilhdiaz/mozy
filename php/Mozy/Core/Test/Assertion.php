@@ -18,18 +18,6 @@ class Assertion extends Object {
         $this->result = $result;
     }
 
-    public function getType() {
-        return $this->type;
-    }
-
-    public function getCondition() {
-        return $this->condition;
-    }
-
-    public function getResult() {
-        return $this->result;
-    }
-
     public static function failed($type, $condition) {
         return Assertion::construct($type, $condition, false);
     }

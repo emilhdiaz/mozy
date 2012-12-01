@@ -24,10 +24,6 @@ trait Assertive {
         return $assertion;
     }
 
-    public function getRecord() {
-        return $this->record;
-    }
-
     public function setRecord($bool) {
         $this->record = (bool) $bool;
     }

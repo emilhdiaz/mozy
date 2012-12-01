@@ -1,12 +1,16 @@
 <?php
-namespace Mozy\Core;
+use Mozy\Core\Framework;
+use Mozy\Core\System\System;
 
 require_once('Mozy/Core/Framework.php');
 
 Framework::init();
 
-#var_dump(serialize(1));
 
-$framework->processExchange();
+$system = System::construct();
 
+var_dump( $system->groupByGID(5219) );
+
+
+#$framework->processExchange();
 ?>

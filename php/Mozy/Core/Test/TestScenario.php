@@ -4,8 +4,7 @@ namespace Mozy\Core\Test;
 use Mozy\Core;
 use Mozy\Core\Object;
 use Mozy\Core\Singleton;
-use Mozy\Core\ApplicationContext;
-use Mozy\Core\Factory;
+use Mozy\Core\Reflection\ReflectionClass;
 use Mozy\Core\Reflection\ReflectionMethod;
 
 abstract class TestScenario extends Object implements Singleton, Testable {
@@ -25,14 +24,12 @@ abstract class TestScenario extends Object implements Singleton, Testable {
 
 
     protected function __construct(UnitTest $unitTest) {
-        global $framework;
-
         $this->name = $this->class->name;
         $this->unitTest = $unitTest;
-        $this->requires = Core\_A($this->class->getComment()->getAnnotation('requires'));
+        $this->requires = Core\_A($this->class->comment->annotation('requires'));
 
-        $class = $framework->factory->reflect(Core\TestCase);
-        foreach( $this->class->getMethods(ReflectionMethod::IS_PUBLIC) as $test ) {
+        $class = ReflectionClass::construct(Core\TestCase);
+        foreach( $this->class->methods(ReflectionMethod::IS_PUBLIC) as $test ) {
             // filter non test methods
             if( !preg_match(self::TestCaseNameRegex, $test->name) )
                 continue;
@@ -42,7 +39,7 @@ abstract class TestScenario extends Object implements Singleton, Testable {
                 continue;
 
             // create a new TestCase subclass
-            $testCaseClass = $framework->factory->extend($class, $this->class->name . '_' . $test->name);
+            $testCaseClass = $class->extend( $this->class->name . '_' . $test->name );
 
             $testCase = $testCaseClass::construct($this);
 
@@ -52,10 +49,6 @@ abstract class TestScenario extends Object implements Singleton, Testable {
 
     public function __toString() {
         return $this->name;
-    }
-
-    public function __sleep() {
-        return ['testCases','result','message'];
     }
 
     public function setUp() {
@@ -69,9 +62,10 @@ abstract class TestScenario extends Object implements Singleton, Testable {
     }
 
     public function run() {
+        global $framework;
 
         // check for runtime requirements
-        $dependencyManager = $this->getFramework()->getDependencyManager();
+        $dependencyManager = $framework->dependencyManager;
         foreach( $this->requires as $requirement=>$value ) {
             if( !$dependencyManager->isDependencyLoaded($requirement, $value) ) {
                 $this->message = 'Runtime dependency on ' . $requirement . ' ' . $value . ' failed.';
@@ -95,12 +89,12 @@ abstract class TestScenario extends Object implements Singleton, Testable {
             }
         }
 
-        if( count($this->getFailed()) > 0 ) {
-            $this->message = count($this->getFailed()) . ' test case(s) failed.';
+        if( count($this->failed) > 0 ) {
+            $this->message = count($this->failed) . ' test case(s) failed.';
             $this->result = FAILED;
         }
-        elseif( count($this->getPassed()) > 0 ) {
-            $this->message = count($this->getPassed()) . ' test case(s) passed.';
+        elseif( count($this->passed) > 0 ) {
+            $this->message = count($this->passed) . ' test case(s) passed.';
             $this->result = PASSED;
         }
         else {
@@ -169,7 +163,7 @@ abstract class TestScenario extends Object implements Singleton, Testable {
     public function getPassedAssertions() {
         $array = [];
         array_walk($this->testCases, function($testCase, $key) use (&$array) {
-            $array += $testCase->getPassedAssertions();
+            $array += $testCase->passedAssertions;
         });
         return $array;
     }
@@ -177,7 +171,7 @@ abstract class TestScenario extends Object implements Singleton, Testable {
     public function getFailedAssertions() {
         $array = [];
         array_walk($this->testCases, function($testCase, $key) use (&$array) {
-             $array += $testCase->getFailedAssertions();
+             $array += $testCase->failedAssertions;
         });
         return $array;
     }

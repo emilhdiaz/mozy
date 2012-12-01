@@ -1,31 +1,30 @@
 <?php
 namespace Mozy\Core\Reflection;
 
-class ReflectionProperty extends \ReflectionProperty implements Documented {
+final class ReflectionProperty extends \ReflectionProperty implements Documented {
+    use Getters;
+    use Callers;
+    use Bootstrap;
+    use Immutability;
 
+    protected static $reflector;
     protected $type;
-    protected $restricted;
 
     public function __construct($class, $name) {
         parent::__construct($class, $name);
-        $this->type = $this->getComment()->getAnnotation('type');
-        $this->restricted = $this->getComment()->getAnnotation('restricted');
+        $this->type = $this->comment->annotation('type');
     }
 
     public function getDeclaringClass() {
-        return new ReflectionClass($this->class);
+        return ReflectionClass::construct($this->class);
     }
 
     public function getType() {
         return $this->type;
     }
 
-    public function isRestricted() {
-        return $this->restricted;
-    }
-
     public function getComment() {
-        return new ReflectionComment($this);
+        return ReflectionComment::construct($this);
     }
 }
 ?>

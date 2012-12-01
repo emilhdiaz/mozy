@@ -41,68 +41,53 @@ class ConsoleOutput extends Object implements Singleton {
         'white'     => '47',
     ];
 
-    private function addItem($text = '', $nl = false, $attribute = 0, $foreground = 0, $background = 0 ) {
+    private function addItem($text = '', $nl = false, $attribute = 0, $foreground = 0, $background = 0, $ignoreOverrides = false ) {
         $this->items[] = [
-            'text'      => $text,
+            'text'      => ($text ? _S($text) : ''),
             'nl'        => $nl,
-            'attribute' => self::$attribute[$attribute ?: 0],
-            'foreground'=> self::$foreground[$foreground ?: 0],
-            'background'=> self::$background[$background ?: 0]
+            'attribute' => $attribute,
+            'foreground'=> $foreground,
+            'background'=> $background,
+            'modifier'  => $this->modifier($attribute, $foreground, $background),
+            'ignoreOverrides' => $ignoreOverrides
         ];
 
         return $this;
     }
 
-    private function buildItem(array $item) {
-        $output = '';
-        extract($item);
+    private function modifier($attribute = 0, $foreground = 0, $background = 0) {
+        $modifier = '';
 
         if( $attribute || $foreground || $background ) {
-            $output .= "\033[";
-            if( $attribute)
-                $output .= $attribute . (($foreground || $background) ? ";" : '');
+            $modifier = "\033[";
+            if( $attribute )
+                $modifier .= self::$attribute[$attribute ?: 0] . (($foreground || $background) ? ";" : '');
             if( $foreground )
-                $output .= $foreground . ($background ? ";" : '');
+                $modifier .= self::$foreground[$foreground ?: 0] . ($background ? ";" : '');
             if( $background )
-                $output .= $background;
-            $output .= "m";
+                $modifier .= self::$background[$background ?: 0];
+            $modifier .= "m";
         }
-        $output .= $text ? _S($text) : '' . ($nl ? "\n" : '');
-        //. "\033[0m";
-        return $output;
+
+        return $modifier;
     }
 
-    public function send() {
-        print $this->getOutput();
+    public function text( $text, $attribute = 0, $color = 0, $background = 0, $ignoreOverrides = false ) {
+        return $this->addItem($text, false, $attribute, $color, $background, $ignoreOverrides);
     }
 
-    public function getOutput() {
-        $output = '';
-        foreach($this->items as $item) {
-            $output .= $this->buildItem($item);
-        }
-        foreach($this->overrides as $override) {
-            $output = str_replace($override['text'], $this->buildItem($override), $output);
-        }
-        return $output;
-    }
-
-    public function text( $text, $attribute = 0, $color = 0, $background = 0 ) {
-        return $this->addItem($text, false, $attribute, $color, $background);
-    }
-
-    public function line( $text, $attribute = 0, $color = 0, $background = 0 ) {
-        return $this->addItem($text, true, $attribute, $color, $background);
+    public function line( $text, $attribute = 0, $color = 0, $background = 0, $ignoreOverrides = false ) {
+        return $this->addItem($text, true, $attribute, $color, $background, $ignoreOverrides);
     }
 
     public function nl() {
         return $this->addItem(null, true);
     }
 
-    public function each( $array, $prefix = '', $attribute = 0, $color = 0, $background = 0  ) {
+    public function each( $array, $prefix = '', $attribute = 0, $color = 0, $background = 0, $ignoreOverrides = false  ) {
         foreach($array as $key=>$value) {
             $text = $prefix . $key . ': ' . $value;
-            $this->addItem($text, true, $attribute, $color, $background);
+            $this->addItem($text, true, $attribute, $color, $background, $ignoreOverrides);
         }
         return $this;
     }
@@ -111,10 +96,33 @@ class ConsoleOutput extends Object implements Singleton {
         $this->overrides[] = [
             'text'      => $text,
             'nl'        => false,
-            'attribute' => self::$attribute[$attribute ?: 0],
-            'foreground'=> self::$foreground[$foreground ?: 0],
-            'background'=> self::$background[$background ?: 0]
+            'attribute' => $attribute,
+            'foreground'=> $foreground,
+            'background'=> $background,
+            'modifier'  => $this->modifier($attribute, $foreground, $background)
         ];
+    }
+
+    public function __toString() {
+        $output = '';
+
+        foreach($this->items as $item) {
+            extract($item);
+            if( !$ignoreOverrides ) {
+                foreach($this->overrides as $override) {
+                    $replacement = $override['modifier'] . $override['text'] . $modifier;
+                    $text = str_replace($override['text'], $replacement, $text);
+                }
+            }
+            $output .= ($text ? $modifier . $text : '') . ($nl ? "\n" : '');
+        }
+        $this->flush();
+        return $output;
+    }
+
+    public function flush() {
+        $this->items = [];
+        $this->overrides = [];
     }
 }
 ?>

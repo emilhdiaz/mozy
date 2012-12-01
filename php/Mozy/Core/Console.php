@@ -1,7 +1,13 @@
 <?php
 namespace Mozy\Core;
 
-class Console extends Object {
+use Mozy\Core\System\Process;
+
+class Console extends Process {
+
+    public function getPath() {
+        return posix_ctermid();
+    }
 
     public function command($endpoint, $api, $action, $arguments = [], $format = 'native') {
         $command = 'php '. $endpoint . ' ' . $api . ' ' . $action . ' ';

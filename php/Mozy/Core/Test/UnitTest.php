@@ -18,10 +18,11 @@ class UnitTest extends Object implements Singleton, Testable {
 
     const TestScenarioNameRegex     = '/(\S*)(\w+Test)$/';
 
-    protected $testScenarios = [];
     protected $namespaces = [];
+    protected $testScenarios = [];
     protected $result = PENDING;
     protected $message;
+    protected $report;
 
     // options
     protected $defaultNamespace;
@@ -46,10 +47,15 @@ class UnitTest extends Object implements Singleton, Testable {
     protected function __construct($stopOnFailure = false, $separateProcess = false) {
         $this->stopOnFailure = (bool) $stopOnFailure;
         $this->separateProcess = (bool) $separateProcess;
+        $this->report = TestReport::construct($this);
     }
 
     public function __toString() {
         return $this->name;
+    }
+
+    public function __revive(UnitTest $unitTest) {
+
     }
 
     public function addTestScenario(TestScenario $testScenario) {
@@ -100,7 +106,8 @@ class UnitTest extends Object implements Singleton, Testable {
 
             // run test scenario
             if( $this->separateProcess ) {
-                $testScenario = $framework->executeTarget('UnitTest', 'testScenario', ['scenario'=>$testScenario->name, 'report'=>'all'], 'native', true);
+                $report = $framework->callAPI('UnitTest', 'testScenario', ['scenario'=>$testScenario->name, 'report'=>'all'], 'native', true);
+                print $report;
             }
 
             else
@@ -113,18 +120,20 @@ class UnitTest extends Object implements Singleton, Testable {
             }
         }
 
-        if( count($this->getFailed()) > 0 ) {
-            $this->message = count($this->getFailed()) . ' test scenario(s) failed.';
+        if( count($this->failed) > 0 ) {
+            $this->message = count($this->failed) . ' test scenario(s) failed.';
             $this->result = FAILED;
         }
-        elseif( count($this->getPassed()) > 0 ) {
-            $this->message = count($this->getPassed()) . ' test scenario(s) passed.';
+        elseif( count($this->passed) > 0 ) {
+            $this->message = count($this->passed) . ' test scenario(s) passed.';
             $this->result = PASSED;
         }
         else {
             $this->message = 'No test scenarios ran.';
             $this->result = INCOMPLETE;
         }
+
+        return $this->report;
     }
 
     public function setDefaultNamespace($namespace) {
@@ -163,10 +172,6 @@ class UnitTest extends Object implements Singleton, Testable {
         return $this->result;
     }
 
-    public function getReport($reportAll = false) {
-        return TestReport::construct($this, $reportAll);
-    }
-
     public function getPassed() {
         $array = [];
         array_walk($this->testScenarios, function($testScenario, $key) use (&$array) {
@@ -199,42 +204,10 @@ class UnitTest extends Object implements Singleton, Testable {
         return $array;
     }
 
-    public function getPassedTestCases() {
-        $array = [];
-        array_walk($this->testScenarios, function($testScenario, $key) use (&$array) {
-            $array += $testScenario->getPassed();
-        });
-        return $array;
-    }
-
-    public function getFailedTestCases() {
-        $array = [];
-        array_walk($this->testScenarios, function($testScenario, $key) use (&$array) {
-             $array += $testScenario->getFailed();
-        });
-        return $array;
-    }
-
-    public function getSkippedTestCases() {
-        $array = [];
-        array_walk($this->testScenarios, function($testScenario, $key) use (&$array) {
-            $array += $testScenario->getSkipped();
-        });
-        return $array;
-    }
-
-    public function getIncompleteTestCases() {
-        $array = [];
-        array_walk($this->testScenarios, function($testScenario, $key) use (&$array) {
-             $array += $testScenario->getIncomplete();
-        });
-        return $array;
-    }
-
     public function getPassedAssertions() {
         $array = [];
         array_walk($this->testScenarios, function($testScenario, $key) use (&$array) {
-            $array += $testScenario->getPassedAssertions();
+            $array += $testScenario->passedAssertions;
         });
         return $array;
     }
@@ -242,7 +215,7 @@ class UnitTest extends Object implements Singleton, Testable {
     public function getFailedAssertions() {
         $array = [];
         array_walk($this->testScenarios, function($testScenario, $key) use (&$array) {
-             $array += $testScenario->getFailedAssertions();
+             $array += $testScenario->failedAssertions;
         });
         return $array;
     }

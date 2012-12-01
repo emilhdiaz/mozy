@@ -1,6 +1,65 @@
 <?php
 namespace Mozy\Core;
 
+function registerClassPath( $classPath ) {
+    set_include_path(get_include_path() . PATH_SEPARATOR . $classPath);
+}
+
+function coreAutoloader($class) {
+    // prepare namespace path
+    restore_include_path();
+    $namespacePath = get_namespace_path($class);
+    registerClassPath($namespacePath);
+    foreach(['/_Traits', '/_Interfaces', '/_Exceptions', '/_Tests'] as $subdir) {
+        registerClassPath($namespacePath . $subdir);
+    }
+
+    // search for file in namespace path
+    $nameParts = explode('\\', $class);
+    $shortClassName = array_pop($nameParts);
+    $fullFilePath = stream_resolve_include_path($shortClassName . '.php');
+
+    // check if asset exists
+    if( $fullFilePath ) {
+        include_once($fullFilePath);
+        if( class_exists($class) && method_exists($class, 'bootstrap') )
+            $class::bootstrap();
+    }
+}
+
+#TODO move method to more appropriate class
+function convert($data, $from, $to) {
+    $convert = function(&$data, $key, array $transformation) {
+        list($from, $to) = $transformation;
+
+        switch($from) {
+            case 'serial':
+                switch($to) {
+                    case 'native':
+                        $data = Factory::unserialize($data);
+                        break;
+                }
+
+            case 'native':
+                switch($to) {
+                    case 'serial':
+                        $data = serialize($data);
+                        break;
+                }
+
+        }
+    };
+
+    if( is_array($data) )
+        array_walk_recursive($data, $convert, [$from, $to]);
+
+    else
+        $convert($data, 0, [$from, $to]);
+
+    return $data;
+
+}
+
 function create_new_class($class, $base = null) {
     // clean inputs
     $class = preg_replace("/[^A-Za-z0-9_\\\]/","", $class);
@@ -34,14 +93,15 @@ function camelCase($string) {
 }
 
 function get_class_from_filename($fileName) {
-    $fileName = str_replace(ROOT.'/', '', $fileName);
+    $fileName = str_replace(ROOT, '', $fileName);
     $className = str_replace('/', '\\', $fileName);
     $className = substr($className, 0, strrpos($className, '.'));
     $className = trim($className);
 
     #TODO: Find a better way to handle these special namespace subdirectories
-    $className = str_replace('_Exceptions\\', '', $className);
+    $className = str_replace('_Traits\\', '', $className);
     $className = str_replace('_Interfaces\\', '', $className);
+    $className = str_replace('_Exceptions\\', '', $className);
     $className = str_replace('_Tests\\', '', $className);
     $className = str_replace('Autoloaders\\', '', $className);
 
@@ -52,39 +112,28 @@ function get_class_from_filename($fileName) {
 
 function get_path_from_namespace($namespace) {
     $path = str_replace('\\', '/', $namespace);
-    $path = ROOT.'/'.$path;
+    $path = ROOT . $path;
     return $path;
 }
 
-function get_filepath_from_classname($classname, $extension = 'php') {
-    $filePath = str_replace('\\', '/', $classname);
-    $filePath = ROOT.'/'.$filePath.'.'.$extension;
-    return $filePath;
+function get_namespace_path($class) {
+    $namespace = get_namespace($class);
+    $path = ROOT . str_replace('\\', '/', $namespace);
+    return $path;
 }
 
 function get_namespace($class) {
     return substr($class, (int) 0, strrpos($class, '\\'));
 }
 
-function get_calling_frame(Object $object) {
+function get_calling_frame() {
     $trace = debug_backtrace();
-
-    // remove this function call frame
-#    array_shift($trace);
-
     return StackFrame::construct($trace[1]);
+}
 
-    // look for the first frame not acting on the object
-    /*
-    foreach( $trace as $key=>$frame ) {
-
-        // check for method calls within the object
-        if( $frame['object'] === $object )
-            continue;
-
-        return StackFrame::construct($frame);
-    }
-    */
+function get_calling_class() {
+    $trace = debug_backtrace();
+    return ($trace[1]['class']);
 }
 
 function FriendlyErrorType($type) {
@@ -189,7 +238,7 @@ function _A( $object = [] ) {
  * Cast to String
  * Arrays represented in (a1, a2, a3, ..., an) notation
  */
-function _S( $object = null ) {
+function _S( $object = null, $shorten = true ) {
     if( is_string($object) )
         return $object;
 
@@ -199,29 +248,30 @@ function _S( $object = null ) {
         }
         else {
             foreach( $object as $key=>$value ) {
-                if( is_array($value) ) $object[$key] = _S($value);
-                if( is_object($value) ) $object[$key] = get_class($value);
-                if( is_string($value) && strlen($value) > 15 ) $object[$key] = substr($value, 0, 15) . '...';
+                if( is_array($value) )
+                    $object[$key] = _S($value);
+
+                if( is_object($value) )
+                    $object[$key] = get_class($value);
+
+                if( is_string($value) && $shorten && strlen($value) > 15 )
+                    $object[$key] = substr($value, 0, 15) . '...';
             }
         }
         return '('. implode(', ',$object) .')';
     }
 
-    if( is_float($object) ) {
+    if( is_float($object) )
         return number_format($object, 1);
-    }
 
-    if( is_int($object) ) {
+    if( is_int($object) )
         return strval($object);
-    }
 
     if( is_object($object) )
         return $object->__toString();
 
-    if( is_null($object) ) {
-        var_dump($object);
+    if( is_null($object) )
         return '<null>';
-    }
 
     if( $object === true )
         return '<true>';

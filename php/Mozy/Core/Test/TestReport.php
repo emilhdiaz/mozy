@@ -2,17 +2,54 @@
 namespace Mozy\Core\Test;
 
 use Mozy\Core;
-use Mozy\Core\ApplicationContext;
 use Mozy\Core\Object;
 
 class TestReport extends Object {
-
     protected $unitTest;
-    protected $reportAll;
+    protected $mode;
 
-    protected function __construct(UnitTest $unitTest, $reportAll = false) {
+    protected function __construct(UnitTest $unitTest) {
         $this->unitTest = $unitTest;
-        $this->reportAll = $reportAll;
+    }
+
+    public function setMode($mode) {
+        $this->mode = $mode;
+    }
+
+    public function getPassedTestCases() {
+        $array = [];
+        foreach($this->unitTest->testScenarios as $testScenario) {
+            $array += $testScenario->passed;
+        }
+        return $array;
+    }
+
+    public function getFailedTestCases() {
+        $array = [];
+        foreach($this->unitTest->testScenarios as $testScenario) {
+             $array += $testScenario->failed;
+        }
+        return $array;
+    }
+
+    public function getSkippedTestCases() {
+        $array = [];
+        foreach($this->unitTest->testScenarios as $testScenario) {
+            $array += $testScenario->skipped;
+        }
+        return $array;
+    }
+
+    public function getIncompleteTestCases() {
+        $array = [];
+        foreach($this->unitTest->testScenarios as $testScenario) {
+             $array += $testScenario->incomplete;
+        }
+        return $array;
+    }
+
+    public function __revive(TestReport $report) {
+        // nothing of interest
     }
 
     public function __toText() {
@@ -38,13 +75,13 @@ class TestReport extends Object {
         #TODO: add something indicating what options are used and what namespaces were tested
 
         // check for skipped test scenarios and test cases
-        $skippedTestScenarios = $unitTest->getSkipped();
-        $skippedTestCases = $unitTest->getSkippedTestCases();
+        $skippedTestScenarios = $unitTest->skipped;
+        $skippedTestCases = $this->skippedTestCases;
 
 
         // check for incomplete test scenarios and test cases
-        $incompleteTestScenarios = $unitTest->getIncomplete();
-        $incompleteTestCases = $unitTest->getIncompleteTestCases();
+        $incompleteTestScenarios = $unitTest->incomplete;
+        $incompleteTestCases = $this->incompleteTestCases;
 
         if( $skippedTestScenarios + $skippedTestCases + $incompleteTestScenarios + $incompleteTestCases )
             $output->line('Warnings:', 0, 'yellow');
@@ -74,17 +111,17 @@ class TestReport extends Object {
             if( $testScenario->result == PENDING )
                 continue;
 
-            $passed = count($testScenario->getPassed());
-            $failed = count($testScenario->getFailed());
-            $skipped = count($testScenario->getSkipped());
-            $incomplete = count($testScenario->getIncomplete());
-            $passedAssertions = count($testScenario->getPassedAssertions());
-            $failedAssertions = count($testScenario->getFailedAssertions());
+            $passed = count($testScenario->passed);
+            $failed = count($testScenario->failed);
+            $skipped = count($testScenario->skipped);
+            $incomplete = count($testScenario->incomplete);
+            $passedAssertions = count($testScenario->passedAssertions);
+            $failedAssertions = count($testScenario->failedAssertions);
 
             $total = $passed + $failed;
             $totalAssertions = $passedAssertions + $failedAssertions;
 
-            $output->line('__________________________________________________________________________________________________');
+            $output->line('__________________________________________________________________________________________________', 'bold', 'white');
             $output->text(' Test Scenario ' . $testScenario->name, 'bold', 'cyan');
             $output->text(' - ' . $testScenario->result);
             $output->nl();
@@ -93,7 +130,7 @@ class TestReport extends Object {
                 $output->line(
                     ' Test Cases('. $total .': '. $passed .' PASSED / '. $failed .' FAILED / '. $skipped .' SKIPPED / '. $incomplete .' INCOMPLETE), '
                     .'Assertions('. $totalAssertions .': '. $passedAssertions .' PASSED / '. $failedAssertions .' FAILED)',
-                    'bold', 'black'
+                    'bold', 'black', null, true
                 );
             }
             else {
@@ -101,7 +138,7 @@ class TestReport extends Object {
             }
 
             // check reporting mode
-            if( ($testScenario->result == PASSED) && ($this->reportAll == false) )
+            if( ($testScenario->result == PASSED) && ($this->mode != 'all') )
                 return;
 
             // TEST CASES
@@ -110,13 +147,13 @@ class TestReport extends Object {
                     continue;
 
                 // check reporting mode
-                if( ($testCase->result == PASSED) && ($this->reportAll == false) )
+                if( ($testCase->result == PASSED) && ($this->mode != 'all') )
                     return;
 
-                $passed = count($testCase->getPassed());
-                $failed = count($testCase->getFailed());
-                $passedAssertions = count($testCase->getPassedAssertions());
-                $failedAssertions = count($testCase->getFailedAssertions());
+                $passed = count($testCase->passed);
+                $failed = count($testCase->failed);
+                $passedAssertions = count($testCase->passedAssertions);
+                $failedAssertions = count($testCase->failedAssertions);
 
                 $total = $passed + $failed;
                 $totalAssertions = $passedAssertions + $failedAssertions;
@@ -130,7 +167,7 @@ class TestReport extends Object {
                     $output->line(
                         '   Tests('. $total .': '. $passed .' PASSED / '. $failed .' FAILED), '
                         .'Assertions('. $totalAssertions .': '. $passedAssertions .' PASSED / '. $failedAssertions .' FAILED)',
-                        'bold', 'black'
+                        'bold', 'black', null, true
                     );
                 }
                 else {
@@ -140,7 +177,7 @@ class TestReport extends Object {
                 // TESTS
                 foreach($testCase->tests as $test) {
                     // check reporting mode
-                    if( ($test->result == PASSED) && ($this->reportAll == false) )
+                    if( ($test->result == PASSED) && ($this->mode != 'all') )
                         return;
 
                     $output->text('    -> ');
@@ -149,9 +186,9 @@ class TestReport extends Object {
                     $output->text(
                         (
                             $test->failure ?
-                            $test->failure->getMessage() :
-                                'Assertions(' . count($test->getPassed())
-                        ) . ')', 'bold', 'black'
+                            $test->failure->message :
+                                'Assertions(' . count($test->passed)
+                        ) . ')', 'bold', 'black', null, true
                     );
                     $output->nl();
                 }
@@ -161,7 +198,12 @@ class TestReport extends Object {
         $output->nl();
         $output->line('Test Complete.');
         $output->nl();
-        $output->send();
+        return $output;
+
+    }
+
+    public function __toSerial() {
+        return serialize($this);
     }
 }
 ?>

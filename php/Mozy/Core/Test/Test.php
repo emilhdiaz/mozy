@@ -30,7 +30,6 @@ class Test extends Object implements Testable {
     public function run() {
         try{
             $test = $this->testCase->prototype->bindTo($this, $this);
-            $e = new TestException($this);
 
             // turn on output buffering
             ob_start();
@@ -90,7 +89,7 @@ class Test extends Object implements Testable {
         }
 
         // congrats!! test passed
-        if( count($this->getPassed()) > 0 )
+        if( count($this->passed) > 0 )
             $this->result = PASSED;
     }
 
@@ -99,11 +98,11 @@ class Test extends Object implements Testable {
     }
 
     public function getPassed() {
-        return $this->getPassedAssertions();
+        return $this->passedAssertions;
     }
 
     public function getFailed() {
-        return $this->getFailedAssertions();
+        return $this->failedAssertions;
     }
 }
 ?>

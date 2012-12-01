@@ -1,0 +1,42 @@
+#!/usr/bin/env sh
+
+clear
+
+make clean
+
+cd ~/lib/pkg/php-5.4.9
+
+./buildconf --force
+
+./configure \
+--prefix=/var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data//lib/pkg/php-5.4.9 \
+--without-pear \
+--enable-pcntl \
+--enable-sysvsem \
+--enable-sysvshm \
+--enable-sysvmsg \
+--with-tsrm-pthreads \
+--enable-maintainer-zts \
+--enable-pthreads \
+--enable-calendar
+
+make
+
+make install
+
+rm /var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/pear
+rm /var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/peardev
+rm /var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/pecl
+rm /var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/phar
+rm /var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/phar.phar
+rm /var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/php
+rm /var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/php-cgi
+rm /var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/php-config
+rm /var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/phpize
+
+ln -s /var/lib/openshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/lib/pkg/php-5.4.9/bin/phar /var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/phar
+ln -s /var/lib/openshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/lib/pkg/php-5.4.9/bin/phar.phar /var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/phar.phar
+ln -s /var/lib/openshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/lib/pkg/php-5.4.9/bin/php /var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/php
+ln -s /var/lib/openshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/lib/pkg/php-5.4.9/bin/php-cgi /var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/php-cgi
+ln -s /var/lib/openshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/lib/pkg/php-5.4.9/bin/php-config /var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/php-config
+ln -s /var/lib/openshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/lib/pkg/php-5.4.9/bin/phpize /var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/phpize

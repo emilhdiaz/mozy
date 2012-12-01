@@ -3,17 +3,18 @@ namespace Mozy\Core;
 
 class ConsoleRequest extends ExchangeRequest {
 
-    protected function __construct($endpoint, $api, $action, $arguments = [], $format = 'serialized') {
+    protected function __construct($endpoint, $api, $action, $arguments = [], $format = 'serial') {
         parent::__construct($endpoint, $api, $action, $arguments, $format);
     }
 
     public function send() {
-        $command = Console::command($this->endpoint, $this->api, $this->action, $this->arguments, $this->format);
-        var_dump($command);
+        global $framework;
+
+        $command = $framework->console->command($this->endpoint, $this->api, $this->action, $this->arguments, $this->format);
 
         exec($command, $output, $exitCode);
-        var_dump($output);
-        var_dump($exitCode);
+        $result = implode('', $output);
+        return  convert($result, $this->format, 'native');
     }
 
     public static function current() {
@@ -54,7 +55,7 @@ class ConsoleRequest extends ExchangeRequest {
         else
             $format = 'none';
 
-        self::convert($arguments, $format);
+        $arguments = convert($arguments, $format, 'native');
 
         return static::construct($endpoint, $api, $action, $arguments, $format);
     }

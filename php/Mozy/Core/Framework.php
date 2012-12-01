@@ -1,26 +1,34 @@
 <?php
 namespace Mozy\Core;
 
+use Mozy\Core\AutoLoad\AutoLoader;
+use Mozy\Core\AutoLoad\ClassLoader;
+use Mozy\Core\AutoLoad\TraitLoader;
+use Mozy\Core\AutoLoad\InterfaceLoader;
+use Mozy\Core\AutoLoad\ExceptionLoader;
+use Mozy\Core\AutoLoad\TestLoader;
 use Mozy\Core\Reflection\ReflectionClass;
 
+
 require_once('common.php');
-require_once('_Interfaces/Singleton.php');
-require_once('_Traits/ApplicationContext.php');
-require_once('Reflection/_Interfaces/Documented.php');
-require_once('Reflection/ReflectionMethod.php');
-require_once('Reflection/ReflectionClass.php');
-require_once('Object.php');
-require_once('Factory.php');
 
-define('ROOT', getcwd().'/php');
+define('ROOT', getcwd().'/php/');
 
-const Object        = 'Mozy\Core\Object';
-const Immutable     = 'Mozy\Core\Immutable';
-const Singleton     = 'Mozy\Core\Singleton';
-const Factory       = 'Mozy\Core\Factory';
-const TestCase      = 'Mozy\Core\Test\TestCase';
-const TestScenario  = 'Mozy\Core\Test\TestScenario';
-const Assertion     = 'Mozy\Core\Test\Assertion';
+spl_autoload_register( 'Mozy\Core\coreAutoloader', true );
+
+const Object                = 'Mozy\Core\Object';
+const Immutable             = 'Mozy\Core\Immutable';
+const Singleton             = 'Mozy\Core\Singleton';
+const Factory               = 'Mozy\Core\Factory';
+const TestCase              = 'Mozy\Core\Test\TestCase';
+const TestScenario          = 'Mozy\Core\Test\TestScenario';
+const Assertion             = 'Mozy\Core\Test\Assertion';
+const ReflectionNamespace   = 'Mozy\Core\Reflection\ReflectionNamespace';
+const ReflectionClass       = 'Mozy\Core\Reflection\ReflectionClass';
+const ReflectionMethod      = 'Mozy\Core\Reflection\ReflectionMethod';
+const ReflectionProperty    = 'Mozy\Core\Reflection\ReflectionProperty';
+const ReflectionParameter   = 'Mozy\Core\Reflection\ReflectionParameter';
+const ReflectionComment     = 'Mozy\Core\Reflection\ReflectionComment';
 
 global $framework;
 
@@ -32,15 +40,14 @@ final class Framework extends Object implements Singleton {
     protected $console;
     protected $application;
     protected $allowSubprocess = [];
+    protected $maxChildProcesses = 100;
 
     protected function __construct() {
         // configure Class Path & Autoloaders
-        $this->registerClassPath( ROOT );
-        spl_autoload_register( [$this,'coreAutoloader'], true );
         $autoloader = AutoLoader::construct();
         $autoloader->registerLoader( ClassLoader::construct() );
-        $autoloader->registerLoader( InterfaceLoader::construct() );
         $autoloader->registerLoader( TraitLoader::construct() );
+        $autoloader->registerLoader( InterfaceLoader::construct() );
         $autoloader->registerLoader( ExceptionLoader::construct() );
         $autoloader->registerLoader( TestLoader::construct() );
 
@@ -58,7 +65,7 @@ final class Framework extends Object implements Singleton {
         $framework = self::construct();
 
         // write the PID
-        $framework->console->output->line("PHP Process (".getmypid().")")->send();
+#        print $framework->console->output->line("PHP Process (".getmypid().")");
     }
 
     public static function bootstrap() {
@@ -76,37 +83,17 @@ final class Framework extends Object implements Singleton {
         ini_set('xmlrpc_errors', false);                //default false
 
         // configure Error and Exception Handlers
-        set_error_handler( 'Mozy\Core\errorHandler' );
-        set_exception_handler( 'Mozy\Core\exceptionHandler' );
-        register_shutdown_function('Mozy\Core\fatalErrorHandler');
+#        set_error_handler( 'Mozy\Core\errorHandler' );
+#        set_exception_handler( 'Mozy\Core\exceptionHandler' );
+#        register_shutdown_function('Mozy\Core\fatalErrorHandler');
         assert_options(ASSERT_WARNING, FALSE);
 
         /* Buffer Output */
-        ob_start();
-    }
-
-    protected function coreAutoloader($className) {
-        $this->registerClassPath( ROOT . '/Mozy/Core');
-        $this->registerClassPath( ROOT . '/Mozy/Core/_Exceptions');
-        $this->registerClassPath( ROOT . '/Mozy/Core/_Interfaces');
-        $this->registerClassPath( ROOT . '/Mozy/Core/_Tests');
-        $this->registerClassPath( ROOT . '/Mozy/Core/Autoloaders');
-        $this->registerClassPath( ROOT . '/Mozy/Core/Reflection');
-        $this->registerClassPath( ROOT . '/Mozy/Core/Reflection/_Exceptions');
-        $this->registerClassPath( ROOT . '/Mozy/Core/Reflection/_Interfaces');
-
-        $nameParts = explode('\\', $className);
-        $shortClassName = array_pop($nameParts);
-        $fullFilePath = stream_resolve_include_path($shortClassName . '.php');
-
-        if( $fullFilePath ) {
-            include_once($fullFilePath);
-            if( class_exists($className) && method_exists($className, 'bootstrap') )
-                $className::bootstrap();
-        }
+#        ob_start();
     }
 
     public function processExchange() {
+        // determine the exchange request type
         switch( $this->gateway ) {
             case 'CLI':
                 $request = ConsoleRequest::current();
@@ -116,13 +103,86 @@ final class Framework extends Object implements Singleton {
                 break;
         }
 
+        #TODO: switch this to checking a PID file during initialization
         $this->allowSubprocess = (bool) (array_value($request->arguments, 'allowSubprocess') === true);
 
-        $this->executeTarget($request->api, $request->action, $request->arguments, $request->format);
+        try {
+            $result = $this->callAPI($request->api, $request->action, $request->arguments, $request->format);
+        }
+        #TODO: need to handle API Exception here
+        catch(Exception $e) {
+            throw $e;
+        }
+
+        // generate the exchange response type
+        switch($request->format) {
+            case 'text':
+                print $result->__toText();
+                break;
+
+            case 'serial':
+                print $result->__toSerial();
+                break;
+
+            case 'native':
+            default:
+                print $result->__toText();
+                break;
+        }
     }
 
-    public function registerClassPath( $classPath ) {
-        set_include_path(get_include_path() . PATH_SEPARATOR . $classPath);
+    public function callAPI($api, $action, $arguments, $format = null, $separateProcess = false) {
+        $api = 'Mozy\APIs\\'.$api.'API';
+
+        if( !ReflectionClass::exists($api) ) {
+            #TODO throw API level exception
+            throw new Exception($api);
+        }
+
+        $api = $api::construct();
+
+        if( !$api->class->hasMethod($action) ) {
+            #TODO throw API level exception
+            throw new Exception($action);
+        }
+
+        $method = $api->class->method($action);
+        $parameters = [];
+
+        foreach( $method->parameters as $parameter ) {
+            #TODO check argument types
+            $value = array_value($arguments, $parameter->name) ?: array_value($arguments, $parameter->position);
+
+            // check if value is required
+            if( !$value && !$parameter->isDefaultValueAvailable() )
+                #TODO throw API level exception
+                throw new Exception($parameter);
+
+            // dont need to add to command line arguments
+            if( !$value && $separateProcess )
+                continue;
+
+            $parameters[$parameter->name] = $value;
+        }
+
+        ################################################################################
+        # VERY DANGEROUS!! Ensure this does not cause an endless loop of child processes
+        ################################################################################
+        if( $separateProcess && !$this->allowSubprocess ) {
+            #TODO throw API level exception
+            throw new Exception("Subprocesses not allowed!");
+        }
+
+        $result;
+        if( $separateProcess ) {
+            $request = ConsoleRequest::construct($this->endpoint, $api->name, $action, $parameters);
+            $response = $request->send();
+            $result = $response;
+        }
+        else {
+            $result = $method->invokeArgs($api, $parameters);
+        }
+        return $result;
     }
 
     public function getDependencyManager() {
@@ -148,60 +208,8 @@ final class Framework extends Object implements Singleton {
         }
     }
 
-    public function executeTarget($api, $action, $arguments, $format = null, $separateProcess = false) {
-        $api = 'Mozy\APIs\\'.$api.'API';
-
-        if( !ReflectionClass::exists($api) ) {
-            #TODO throw API level exception
-            throw new Exception($api);
-        }
-
-        $api = $api::construct();
-
-        if( !$api->class->hasMethod($action) ) {
-            #TODO throw API level exception
-            throw new Exception($action);
-        }
-
-        $method = $api->class->getMethod($action);
-        $parameters = [];
-
-        foreach( $method->getParameters() as $parameter ) {
-            #TODO check argument types
-            $value = array_value($arguments, $parameter->name) ?: array_value($arguments, $parameter->getPosition());
-
-            // check if value is required
-            if( !$value && !$parameter->isDefaultValueAvailable() )
-                #TODO throw API level exception
-                throw new Exception($parameter);
-
-            // dont need to add to command line arguments
-            if( !$value && $separateProcess )
-                continue;
-
-            $parameters[$parameter->name] = $value;
-        }
-
-        ################################################################################
-        # VERY DANGEROUS!! Ensure this does not cause an endless loop of child processes
-        ################################################################################
-        if( $separateProcess && !$this->allowSubprocess ) {
-            #TODO throw API level exception
-            throw new Exception("Subprocesses not allowed!");
-        }
-
-        if( $separateProcess ) {
-            $request = ConsoleRequest::construct($this->endpoint, $api->name, $action, $parameters);
-            $response = $request->send();
-#            $result = $response->result;
-        }
-        else {
-            $result = $method->invokeArgs($api, $parameters);
-        }
-    }
-
     public function printErrorReportingLevels() {
-        $this->console->output->line(FriendlyErrorType(error_reporting()))->send();
+        print $this->console->output->line(FriendlyErrorType(error_reporting()));
     }
 }
 
@@ -281,23 +289,23 @@ function errorHandler($errno, $errstr, $errfile, $errline, $errcontext) {
     }
 
     print("UNHANDLED ERROR: " . FriendlyErrorType($errno) ."- $errstr file $errfile on line $errline \n");
-    die();
+    die($errno);
 }
 
 function exceptionHandler(\Exception $exception) {
 
     if( $exception instanceOf SemanticException ) {
-        print($exception);
+        print $exception . PHP_EOL;
     }
     elseif( $exception instanceOf Exception ) {
-        print($exception);
-        print($exception->getStackTrace());
+        print $exception . PHP_EOL;
+        print $exception->stackTrace . PHP_EOL;
     }
     else {
-        print($exception);
+        print $exception . PHP_EOL;
     }
 
-    die();
+    exit($exception->code);
 }
 
 function fatalErrorHandler() {

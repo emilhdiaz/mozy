@@ -17,23 +17,6 @@ abstract class ExchangeRequest extends Object {
         $this->format   = $format;
     }
 
-    #TODO move method to more appropriate class
-    protected static function convert(&$data, $from, $to = 'native') {
-        if( !is_array($data) ) {
-            // check format and convert
-            switch($from) {
-                case 'serialized':
-                    $data = unserialize($data);
-                    break;
-            }
-        }
-        else {
-            foreach($data as &$value) {
-                self::convert($value, $from, $to);
-            }
-        }
-    }
-
     abstract public function send();
 
     public static function current() {

@@ -4,7 +4,6 @@ namespace Mozy\Core\Test;
 use Mozy\Core;
 use Mozy\Core\Object;
 use Mozy\Core\Singleton;
-use Mozy\Core\ApplicationContext;
 
 abstract class TestCase extends Object implements Singleton, Testable {
 
@@ -28,13 +27,13 @@ abstract class TestCase extends Object implements Singleton, Testable {
         $this->name = $this->class->name;
         $this->testScenario = $testScenario;
 
-        $comment = $this->testScenario->class->getMethod($this->shortName)->getComment();
+        $comment = $this->testScenario->class->method($this->shortName)->comment;
 
-        $this->requires          = Core\_A($comment->getAnnotation('requires'));
-        $this->dependsOn         = Core\_A($comment->getAnnotation('dependsOn'));
-        $this->provider          = $comment->getAnnotation('provider');
-        $this->expectedException = $comment->getAnnotation('expectedException');
-        $this->expectedOutput    = $comment->getAnnotation('expectedOutput');
+        $this->requires          = Core\_A($comment->annotation('requires'));
+        $this->dependsOn         = Core\_A($comment->annotation('dependsOn'));
+        $this->provider          = $comment->annotation('provider');
+        $this->expectedException = $comment->annotation('expectedException');
+        $this->expectedOutput    = $comment->annotation('expectedOutput');
 
         if( $this->provider ) {
             $this->variations = $testScenario->{$this->provider}() ?: [];
@@ -51,7 +50,7 @@ abstract class TestCase extends Object implements Singleton, Testable {
         global $framework;
 
         // check for runtime requirements
-        $dependencyManager = $framework->getDependencyManager();
+        $dependencyManager = $framework->dependencyManager;
         foreach( $this->requires as $requirement=>$value ) {
             if( !$dependencyManager->isDependencyLoaded($requirement, $value) ) {
                 $this->message = 'Runtime dependency on ' . $requirement . ' ' . $value . ' failed.';
@@ -96,12 +95,12 @@ abstract class TestCase extends Object implements Singleton, Testable {
         }
 
         // check results
-        if( count($this->getFailed()) > 0 ) {
-            $this->message = count($this->getFailed()) . ' test(s) failed.';
+        if( count($this->failed) > 0 ) {
+            $this->message = count($this->failed) . ' test(s) failed.';
             $this->result = FAILED;
         }
-        elseif( count($this->getPassed()) > 0 ) {
-            $this->message = count($this->getPassed()) . ' test(s) passed.';
+        elseif( count($this->passed) > 0 ) {
+            $this->message = count($this->passed) . ' test(s) passed.';
             $this->result = PASSED;
         }
         else {
@@ -119,7 +118,7 @@ abstract class TestCase extends Object implements Singleton, Testable {
     }
 
     public function getPrototype() {
-        return $this->testScenario->class->getMethod($this->shortName)->getClosure($this->testScenario);
+        return $this->testScenario->class->method($this->shortName)->closure($this->testScenario);
     }
 
     public function getPassed() {
@@ -141,7 +140,7 @@ abstract class TestCase extends Object implements Singleton, Testable {
     public function getPassedAssertions() {
         $array = [];
         array_walk($this->tests, function($test, $key) use (&$array) {
-            $array += $test->getPassedAssertions();
+            $array += $test->passedAssertions;
         });
         return $array;
     }
@@ -149,7 +148,7 @@ abstract class TestCase extends Object implements Singleton, Testable {
     public function getFailedAssertions() {
         $array = [];
         array_walk($this->tests, function($test, $key) use (&$array) {
-             $array += $test->getFailedAssertions();
+             $array += $test->failedAssertions;
         });
         return $array;
     }

@@ -1,43 +1,48 @@
 <?php
-namespace Mozy\Core\Reflection; 
+namespace Mozy\Core\Reflection;
 
-class ReflectionParameter extends \ReflectionParameter {
+final class ReflectionParameter extends \ReflectionParameter {
+    use Getters;
+    use Callers;
+    use Bootstrap;
+    use Immutability;
 
-    public $declaringClass;
-    public $method;
-    
+    protected static $reflector;
+    protected $declaringClass;
+    protected $method;
+
     public function __construct($class, $method, $parameter) {
         parent::__construct([$class, $method], $parameter);
         $this->declaringClass = $class;
         $this->method = $method;
     }
-    
+
     public function getDeclaringClass() {
-        return new ReflectionClass($this->declaringClass);
+        return ReflectionClass::construct($this->declaringClass);
     }
-    
+
     public function getDeclaringMethod() {
-        return new ReflectionMethod($this->declaringClass, $this->method);
+        return ReflectionMethod::construct($this->declaringClass, $this->method);
     }
-    
+
     public function getType() {
         $className;
         $class = parent::getClass();
-        
+
         // check annotations
         if( !$class ) {
-            $comment = $this->getDeclaringMethod()->getDocComment();
+            $comment = $this->declaringMethod->docComment;
             preg_match('/@var\s+'.$this->name.'\s+(\S+)[\r\n]/', $comment, $matches);
             $className = count($matches) > 0 ? $matches[1] : null;
-        } 
+        }
         else {
             $className = $class->name;
         }
-        
-        if( !ReflectionClass::exists($className) ) 
+
+        if( !ReflectionClass::exists($className) )
             return;
-        
-        return new ReflectionClass($className);
+
+        return ReflectionClass::construct($className);
     }
 }
 ?>

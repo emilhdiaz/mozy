@@ -1,45 +1,45 @@
 <?php
 namespace Mozy\Core;
 
-class StackTrace extends Object implements Immutable {
-    
+class StackTrace extends Object {
+
     protected $stack;
     protected $pointer = 0;
-    
+
     protected function __construct( Exception $e = null ) {
-        $this->stack = $e ? $e->getTrace() : debug_backtrace();
-        
-        if( empty($this->stack) ) 
+        $this->stack = $e ? $e->trace : debug_backtrace();
+
+        if( empty($this->stack) )
             $this->stack[0] = [];
     }
-    
-    public function getCurrentFrame() {        
+
+    public function getCurrentFrame() {
         return StackFrame::construct($this->stack[$this->pointer]);
     }
 
     public function getTopFrame() {
         $this->pointer = 0;
-        return $this->getCurrentFrame();
+        return $this->currentFrame;
     }
-    
+
     public function getNextFrame() {
         $this->pointer++;
-        return $this->getCurrentFrame();
+        return $this->currentFrame;
     }
-    
+
     public function hasNextFrame() {
         return (bool) ( $this->pointer < (sizeof($this->stack) - 1) );
     }
-    
+
     public function getPreviousFrame() {
         $this->pointer--;
-        return $this->getCurrentFrame();
+        return $this->currentFrame;
     }
-    
+
     public function __toString() {
-        $str = "    ". $this->getCurrentFrame() ."\n";
+        $str = "    ". $this->currentFrame ."\n";
         while ($this->hasNextFrame()) {
-            $str .= "    ". $this->getNextFrame() ."\n";
+            $str .= "    ". $this->nextFrame ."\n";
         }
         return $str;
     }
