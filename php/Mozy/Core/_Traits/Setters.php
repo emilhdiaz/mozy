@@ -13,7 +13,7 @@ trait Setters {
 
         /* Indirect Getter Access */
         if( method_exists($class, $setter) ) {
-            $method = ReflectionMethod::construct($class, $getter);
+            $method = ReflectionMethod::construct($class, $setter);
             $frame = get_calling_frame();
 
             if( !$method->isAllowedFor($frame->caller) )

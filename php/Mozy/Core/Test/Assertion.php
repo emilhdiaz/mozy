@@ -4,7 +4,6 @@ namespace Mozy\Core\Test;
 use Mozy\Core;
 use Mozy\Core\Object;
 use Mozy\Core\Exception;
-use Mozy\Core\Console;
 
 class Assertion extends Object {
 

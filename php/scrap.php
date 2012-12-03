@@ -1,10 +1,15 @@
 <?php
 
-var_dump(posix_getpid());
-echo "I am running from ".posix_ctermid();
-var_dump(posix_ttyname(STDOUT));
+echo "Please enter your age: \n";
+
+$age = trim(fgets(STDIN));
+
+echo "You are $age year(s) old\n";
+
+#sleep(5);
 
 die();
+
 /*
 function launchchild() {
     var_dump("here");

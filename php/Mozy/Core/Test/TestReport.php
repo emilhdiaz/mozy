@@ -57,7 +57,7 @@ class TestReport extends Object {
 
         $unitTest = $this->unitTest;
 
-        $output = $framework->console->output;
+        $output = $framework->system->console->output;
 
         $output->overrides(PASSED, 'bold', 'green');
         $output->overrides(FAILED, 'bold', 'red');

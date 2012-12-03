@@ -8,6 +8,7 @@ use Mozy\Core\AutoLoad\InterfaceLoader;
 use Mozy\Core\AutoLoad\ExceptionLoader;
 use Mozy\Core\AutoLoad\TestLoader;
 use Mozy\Core\Reflection\ReflectionClass;
+use Mozy\Core\System\System;
 
 
 require_once('common.php');
@@ -36,9 +37,8 @@ final class Framework extends Object implements Singleton {
 
     private static $self;
     protected $version = 1.0;
-    protected $server;
-    protected $console;
-    protected $application;
+    protected $system;
+#    protected $application;
     protected $allowSubprocess = [];
     protected $maxChildProcesses = 100;
 
@@ -51,8 +51,7 @@ final class Framework extends Object implements Singleton {
         $autoloader->registerLoader( ExceptionLoader::construct() );
         $autoloader->registerLoader( TestLoader::construct() );
 
-        $this->server = Server::construct();
-        $this->console = Console::construct();
+        $this->system = System::construct();
     }
 
     public static function init() {
@@ -214,7 +213,6 @@ final class Framework extends Object implements Singleton {
 }
 
 function errorHandler($errno, $errstr, $errfile, $errline, $errcontext) {
-#    Console::println(FriendlyErrorType($errno) ." : $errstr file $errfile on line $errline \n");
     if( preg_match('/^Missing argument 1 for Mozy\\\Core\\\Object::__construct.*/', $errstr) )
         return;
 
