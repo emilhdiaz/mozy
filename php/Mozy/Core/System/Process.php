@@ -5,48 +5,73 @@ use Mozy\Core\Object;
 
 class Process extends Object {
 
-    public function getPath() {
+    protected $id;
+    protected $proc;
+    protected $in;
+    protected $out;
+    protected $command;
 
+    /**
+     * @restricted System
+     */
+    private static function construct( Command $command, Pipe $in, Pipe $out, Pipe $err = null ) {
+        return parent::_construct_($command, $in, $out, $err);
+    }
+
+    public function __construct( Command $command, Pipe $in, Pipe $out, Pipe $err = null ) {
+        $this->proc = proc_open( (string) $command, [$in->stream, $out->stream, STDERR], $pipes);
+
+        if( !is_resource($this->proc) )
+            throw new \Exception("Command could not be executed as a new process.");
+
+        $this->id       = proc_get_status($this->proc)['pid'];
+        $this->in       = $in;
+        $this->out      = $out;
+        $this->command  = $command;
     }
 
     /**
-     * Get the current working directory (absolute path) of the process.
+     * Checks if the process is still running
      */
-    public function getCWD() {
-        return posix_getcwd();
+    public function isRunning() {
+        return (is_resource($this->proc) ? proc_get_status($this->proc)['running'] : false);
     }
 
     /**
-     * Get the real group ID of the process
+     * Get the process group ID
      */
-    public function getGID() {
-        posix_getgid();
+    public function getGroupLeaderID() {
+        return posix_getpgid( $this->id );
     }
 
     /**
-     * Get the effective group ID of the process.
+     * Set the process group ID
      */
-    public function getEffectiveGID() {
-       return posix_getegid();
+    public function setGroupLeaderID( $pgid ) {
+        posix_setpgid( $this->id, $pgid );
     }
 
     /**
-     * Get the real user ID of the process
+     * Get the process session ID
      */
-    public function getUID() {
-        return posix_getuid();
+    public function getSessionLeaderID() {
+        return posix_getsid( $this->id );
     }
 
     /**
-     * Get the effective user ID of the process
+     * Closed the process
      */
-    public function getEffectiveUID() {
-        return posix_geteuid();
+    public function close() {
+        if( $this->isRunning() )
+            proc_close( $this->proc );
     }
 
-    public function getConsole() {
-
+    /**
+     * Kills the process
+     */
+    public function kill() {
+        if( $this->isRunning() )
+            proc_terminate( $this->proc );
     }
-
 }
 ?>

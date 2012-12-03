@@ -6,7 +6,7 @@ use Mozy\Core\Immutable;
 
 final class Group extends Object implements Immutable {
 
-    protected $gid;
+    protected $id;
     protected $name;
     protected $password;
     protected $members;
@@ -14,19 +14,19 @@ final class Group extends Object implements Immutable {
     /**
      * @restricted System
      */
-    private static function construct( $gid, $name, $password, $members ) {
-        return parent::_construct_( $gid, $name, $password, $members );
+    private static function construct( $id, $name, $password, $members ) {
+        return parent::_construct_( $id, $name, $password, $members );
     }
 
-    protected function __construct( $gid, $name, $password, $members ) {
-        $this->gid      = $gid;
+    protected function __construct( $id, $name, $password, $members ) {
+        $this->id       = $id;
         $this->name     = $name;
         $this->password = $password;
         $this->members  = $members;
     }
 
-    public static function getByGID( $gid ) {
-        $i = posix_getgrgid( $gid );
+    public static function getByID( $id ) {
+        $i = posix_getgrgid( $id );
         return static::construct($i['gid'], $i['name'], $i['passwd'], $i['members']);
     }
 
