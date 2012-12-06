@@ -1,4 +1,4 @@
-#!/var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/php
+#!/usr/bin/env php
 <?php
 use Mozy\Core\Framework;
 use Mozy\Core\System\System;
