@@ -26,7 +26,7 @@ configure:
 		--enable-calendar
 
 install: 
-	make -C $(PHP)
+	make -C $(PHP) > $(PHP)/make.log 2>&1
 	make -C $(PHP) install
 	rm $(BIN)/pear
 	rm $(BIN)/peardev
