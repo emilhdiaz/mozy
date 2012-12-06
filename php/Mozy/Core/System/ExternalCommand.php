@@ -3,21 +3,22 @@ namespace Mozy\Core\System;
 
 use Mozy\Core;
 use Mozy\Core\Object;
+use Mozy\Core\Command;
 
-class Command extends Object {
+class ExternalCommand extends Object implements Command {
 
-    protected $program;
+    protected $command;
     protected $arguments;
     protected $options;
 
-    protected function __construct( $program, $arguments = [], $options = [] ) {
-        $this->program      = $program;
+    protected function __construct( $command, $arguments = [], $options = [] ) {
+        $this->command      = $command;
         $this->arguments    = Core\_A($arguments);
         $this->options      = Core\_A($options);
     }
 
     public function __toString() {
-        $command = $this->program . ' ';
+        $command = $this->command . ' ';
 
         // escape arguments
         foreach($this->arguments as $argument) {
@@ -31,6 +32,11 @@ class Command extends Object {
 
         // clean command
         return escapeshellcmd($command);
+    }
+
+    public function __invoke() {
+        exec( (string) $this, $output );
+        return implode(' ', $output);
     }
 }
 ?>

@@ -13,7 +13,7 @@ use Mozy\Core\System\System;
 
 require_once('common.php');
 
-define('ROOT', getcwd().'/php/');
+define('ROOT', getcwd().'/');
 
 spl_autoload_register( 'Mozy\Core\coreAutoloader', true );
 
@@ -30,8 +30,13 @@ const ReflectionMethod      = 'Mozy\Core\Reflection\ReflectionMethod';
 const ReflectionProperty    = 'Mozy\Core\Reflection\ReflectionProperty';
 const ReflectionParameter   = 'Mozy\Core\Reflection\ReflectionParameter';
 const ReflectionComment     = 'Mozy\Core\Reflection\ReflectionComment';
+const InternalCommand       = 'Mozy\Core\System\InternalCommand';
+const ExternalCommand       = 'Mozy\Core\System\ExternalCommand';
 
-global $framework;
+global $framework, $STDIN, $STDOUT, $STDERR;
+$STDIN  = STDIN;
+$STDOUT = STDOUT;
+$STDERR = STDERR;
 
 final class Framework extends Object implements Singleton {
 
@@ -70,7 +75,7 @@ final class Framework extends Object implements Singleton {
     public static function bootstrap() {
         // configure Error and Logging Runtime Configurations
         ini_set('error_reporting', E_ALL | E_STRICT);
-        ini_set('display_errors', true);                //default false
+        ini_set('display_errors', 'stderr');            //default false
         ini_set('display_startup_errors', true);        //default false
         ini_set('log_errors', false);                   //default true
         ini_set('log_errors_max_len', 1024);            //default 1024
@@ -80,6 +85,9 @@ final class Framework extends Object implements Singleton {
         ini_set('track_errors', false);                 //default false
         ini_set('html_errors', false);                  //default false
         ini_set('xmlrpc_errors', false);                //default false
+
+        // register timezone
+        date_default_timezone_set('America/New_York');
 
         // configure Error and Exception Handlers
 #        set_error_handler( 'Mozy\Core\errorHandler' );

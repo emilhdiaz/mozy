@@ -1,36 +1,15 @@
+#!/var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/php
 <?php
 
 echo "Please enter your age: \n";
 
 $age = trim(fgets(STDIN));
 
-echo "You are $age year(s) old\n";
+echo "You are $age year(s) old \n";
 
-#sleep(5);
+sleep(5);
 
-die();
-
-/*
-function launchchild() {
-    var_dump("here");
-    $pid = pcntl_fork();
-    if ($pid == -1) {
-        die('could not fork');
-    }
-    else if ($pid) {
-        // we are the parent
-        print "Parent";
-
-        pcntl_wait($status); //Protect against Zombie children
-    }
-    else {
-        // we are the child
-        print "Child";
-    }
-}
-
-launchchild();
-*/
+exit();
 
 $MEMSIZE = 512; //  size of shared memory to allocate
 $SEMKEY = 1;   //  Semaphore key

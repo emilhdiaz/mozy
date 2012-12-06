@@ -6,15 +6,15 @@ use Mozy\Core\Singleton;
 
 class System extends Object implements Singleton {
 
-    const TEMP = '/tmp/';
+    const TEMPDIR = '/tmp/';
     protected $os;
     protected $version;
     protected $release;
     protected $architecture;
     protected $hostname;
     protected $console;
+    protected $process;
     protected $loginName;
-    protected $childProcesses = [];
 
     protected function __construct() {
         $i = posix_uname();
@@ -24,6 +24,7 @@ class System extends Object implements Singleton {
         $this->architecture = $i['machine'];
         $this->hostname     = $i['nodename'];
         $this->console      = Console::construct();
+        $this->process      = CurrentProcess::construct($this);
         $this->loginName    = posix_getlogin();
     }
 
@@ -43,52 +44,16 @@ class System extends Object implements Singleton {
         return Group::getByName( $name );
     }
 
+    public function createIO( $blocking = false, $mode = 0600 ) {
+        return $this->createPipe( $blocking, $mode );
+    }
+
     public function createPipe( $blocking = false, $mode = 0600 ) {
-        return Pipe::construct( self::TEMP . 'pipe-' . rand(), $blocking, $mode );
+        return Pipe::construct( 'pipe', $blocking, $mode );
     }
 
-    /**
-     * Executes a blocking command in non-interactive mode
-     */
-    public function execute( Command $command ) {
-        exec( (string) $command, $output );
-        return implode(' ', $output);
+    public function createSharedMemory( $blocking = false, $mode = 0600 ) {
+        return SharedMemory::construct( 'm', 1000, $blocking, $mode );
     }
-
-    /**
-     * Executes a blocking command in interactive mode
-     */
-    public function executeInteractive( Command $command ) {
-        system( (string) $command );
-    }
-
-    /**
-     * Executes an asynchronous command
-     */
-    public function executeAsynchronous( Command $command ) {
-        // create non-blocking pipes
-        $in  = $this->createPipe();
-        $out = $this->createPipe();
-
-        $process = Process::construct($command, $in, $out);
-        $this->childProcesses[$process->id] = $process;
-
-        return $process;
-    }
-
-    public function waitForChildProcesses() {
-        // must ensure child process close
-        foreach( $this->childProcesses as $childProcess ) {
-            $childProcess->close();
-        }
-    }
-
-    public function killChildProcesses() {
-        // signal SIGTERM but do not wait
-        foreach( $this->childProcesses as $childProcess ) {
-            $childProcess->kill();
-        }
-    }
-
 }
 ?>

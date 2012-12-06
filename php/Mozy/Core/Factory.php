@@ -130,7 +130,6 @@ final class Factory {
             if( $class->isSingleton() ) {
                 // existing singleton already registered so merge
                 if( $exiting = array_value(self::$objects, $object->class->name) ) {
-                    print $object;
 #                    $existing->__revive($object);
 #                    return $existing;
                     return null;

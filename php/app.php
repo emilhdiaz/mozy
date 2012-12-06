@@ -1,29 +1,53 @@
+#!/var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/php
 <?php
 use Mozy\Core\Framework;
 use Mozy\Core\System\System;
-use Mozy\Core\System\Command;
-use Mozy\Core\System\Pipe;
+use Mozy\Core\System\InternalCommand;
+use Mozy\Core\System\ExternalCommand;
 
 require_once('Mozy/Core/Framework.php');
 
 Framework::init();
 
-
 $system = System::construct();
+$me = $system->process;
+$me->out->write( "Starting parent process with PID(".$me->id.")" );
 
-$command = Command::construct('php', 'php/scrap.php');
+$calculate_age = function( DateTime $dob ) {
+    $now = new DateTime("now");
+    $age = $now->diff($dob)->format('%y');
+    return $age;
+};
 
-$process = $system->executeAsynchronous( $command );
+$callback = function($age) {
+    print "function calculate_age() says I am " . $age . " year(s) old.\n";
+};
 
-echo "Child PID: ". $process->id . "\n";
+$name = 'Mozy Application Server';
 
-$process->out->blocking = true;
-$process->out->readLine();
-$process->in->write(25);
-$process->out->readLine();
+/* Daemonize the process */
+#$system->process->daemonize($name);
+#while( true ) {
+#    sleep(5);
+#}
 
-#$system->killChildProcesses();
-#$system->waitForChildProcesses();
+/* Execute Internal Async Command */
+$command = InternalCommand::construct( $calculate_age, new DateTime('8/12/1987') );
+$process = $system->process->executeAsynchronous( $command, $callback );
+
+/* Execute External Async Command */
+#$command = ExternalCommand::construct('php/scrap.php');
+#$process->out->readLine();
+#$process->in->write('8/12/1987');
+#$process->out->readLine();
+
+#$system->process->waitForChildren();
+#$me->out->write( "Parent script terminating now... bye bye!" );
+
+#$system->process->quit();
+#$system->process->close();
+#$system->process->terminate();
+#$system->process->kill();
 
 #$framework->processExchange();
 ?>

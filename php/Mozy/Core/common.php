@@ -227,8 +227,12 @@ function _A( $object = [] ) {
         return [$object];
 
     #TODO: implement casting and use __call to check for unsupported casts base on __to* method calls
-    if( is_object($object) )
-        return $object->__toArray();
+    if( is_object($object) ) {
+        if( method_exists($object, '__toArray()') )
+            return $object->__toArray();
+        else
+            return [$object];
+    }
 
     if( is_null($object) )
         return [];
