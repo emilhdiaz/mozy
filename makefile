@@ -1,8 +1,9 @@
-BIN=~/bin
-LIB=~/lib/php
-HOME=~/$(C9_PID)
+MOZY=$(HOME)/$(C9_PID)
+BIN=$(HOME)/bin
+LIB=$(HOME)/lib/php
 PHP=$(LIB)/php-5.4.9
 EXT=$(PHP)/ext
+
 
 download:
 	rm -rf $(LIB)
@@ -25,22 +26,24 @@ configure:
 		--enable-pthreads \
 		--enable-calendar
 
-install: 
+build: 
 	make -C $(PHP) > $(PHP)/make.log 2>&1
 	make -C $(PHP) install
-	rm $(BIN)/pear
-	rm $(BIN)/peardev
-	rm $(BIN)/pecl
-	rm $(BIN)/phar
-	rm $(BIN)/phar.phar
-	rm $(BIN)/php
-	rm $(BIN)/php-cgi
-	rm $(BIN)/php-config
-	rm $(BIN)/phpize
+
+install:
+	rm -f $(BIN)/pear
+	rm -f $(BIN)/peardev
+	rm -f $(BIN)/pecl
+	rm -f $(BIN)/phar
+	rm -f $(BIN)/phar.phar
+	rm -f $(BIN)/php
+	rm -f $(BIN)/php-cgi
+	rm -f $(BIN)/php-config
+	rm -f $(BIN)/phpize
 	ln -s $(PHP)/bin/phar $(BIN)/phar
 	ln -s $(PHP)/bin/phar.phar $(BIN)/phar.phar
 	ln -s $(PHP)/bin/php $(BIN)/php
 	ln -s $(PHP)/bin/php-cgi $(BIN)/php-cgi
 	ln -s $(PHP)/bin/php-config $(BIN)/php-config
 	ln -s $(PHP)/bin/phpize $(BIN)/phpize
-	cp $(HOME)/php.ini $(PHP)/lib/
+	cp $(MOZY)/php.ini $(PHP)/lib/
