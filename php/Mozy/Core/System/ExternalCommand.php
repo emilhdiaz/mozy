@@ -1,7 +1,6 @@
 <?php
 namespace Mozy\Core\System;
 
-use Mozy\Core;
 use Mozy\Core\Object;
 use Mozy\Core\Command;
 
@@ -13,8 +12,8 @@ class ExternalCommand extends Object implements Command {
 
     protected function __construct( $command, $arguments = [], $options = [] ) {
         $this->command      = $command;
-        $this->arguments    = Core\_A($arguments);
-        $this->options      = Core\_A($options);
+        $this->arguments    = _A($arguments);
+        $this->options      = _A($options);
     }
 
     public function __toString() {

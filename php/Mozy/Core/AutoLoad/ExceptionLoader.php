@@ -7,8 +7,8 @@ class ExceptionLoader extends Loader {
         if( strpos($className, 'Exception') === false )
             return;
 
-        $filePath = str_replace('\\', '/', $className);
-        $endOfNamespace = strrpos($filePath, '/') ? strrpos($filePath, '/') + 1 : 0;
+        $filePath = str_replace('\\', DIRECTORY_SEPARATOR, $className);
+        $endOfNamespace = strrpos($filePath, DIRECTORY_SEPARATOR) ? strrpos($filePath, DIRECTORY_SEPARATOR) + 1 : 0;
         $filePath = substr_replace($filePath, '_Exceptions/', $endOfNamespace, 0);
 
         foreach($this->extensions as $extension) {

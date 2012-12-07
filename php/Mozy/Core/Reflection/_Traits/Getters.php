@@ -1,8 +1,6 @@
 <?php
 namespace Mozy\Core\Reflection;
 
-use Mozy\Core;
-
 trait Getters {
     /**
      * Magic Getter

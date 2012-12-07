@@ -1,11 +1,13 @@
 <?php
 namespace Mozy\Core\Test;
 
-use Mozy\Core;
 use Mozy\Core\Object;
 use Mozy\Core\Singleton;
+use Mozy\Core\AsyncCallers;
+use Mozy\Core\System\System;
 
 abstract class TestCase extends Object implements Singleton, Testable {
+    use AsyncCallers;
 
     protected $name;
     protected $testScenario;
@@ -29,8 +31,8 @@ abstract class TestCase extends Object implements Singleton, Testable {
 
         $comment = $this->testScenario->class->method($this->shortName)->comment;
 
-        $this->requires          = Core\_A($comment->annotation('requires'));
-        $this->dependsOn         = Core\_A($comment->annotation('dependsOn'));
+        $this->requires          = _A($comment->annotation('requires'));
+        $this->dependsOn         = _A($comment->annotation('dependsOn'));
         $this->provider          = $comment->annotation('provider');
         $this->expectedException = $comment->annotation('expectedException');
         $this->expectedOutput    = $comment->annotation('expectedOutput');
@@ -72,27 +74,28 @@ abstract class TestCase extends Object implements Singleton, Testable {
 
         // run all variations of the test case
         foreach($this->variations as $input) {
-            $test = Test::construct($this, $input);
-            $this->tests[] = $test;
-            $test->run();
+            $test = $this->__call('runTest', [$input, function( $test ) {
+                $this->tests[] = $test;
 
-            // check if test case has failed
-            if( ($test->result == FAILED) && ($this->testScenario->unitTest->stopOnFailure) ) {
-                $this->message = 'Test variation ' . $test->name . ' failed.';
-                $this->result = FAILED;
-                return;
-            }
+                // check if test case has failed
+                if( ($test->result == FAILED) && ($this->testScenario->unitTest->stopOnFailure) ) {
+                    $this->message = 'Test variation ' . $test->name . ' failed.';
+                    $this->result = FAILED;
+                    return;
+                }
 
-            // check for incomplete tests
-            if( $test->result == PENDING ) {
-                // ignore the last run
-                array_pop($this->tests);
+                // check for incomplete tests
+                if( $test->result == PENDING ) {
+                    // ignore the last run
+                    array_pop($this->tests);
 
-                $this->message = 'No assertions defined.';
-                $this->result = INCOMPLETE;
-                return;
-            }
+                    $this->message = 'No assertions defined.';
+                    $this->result = INCOMPLETE;
+                    return;
+                }
+            }]);
         }
+        System::construct()->process->waitForChildren();
 
         // check results
         if( count($this->failed) > 0 ) {
@@ -107,6 +110,15 @@ abstract class TestCase extends Object implements Singleton, Testable {
             $this->message = 'No test variations defined.';
             $this->result = INCOMPLETE;
         }
+    }
+
+    /**
+     * @async
+     */
+    protected function runTest($input) {
+        $test = Test::construct($this, $input);
+        $test->run();
+        return $test;
     }
 
     public function getResult() {

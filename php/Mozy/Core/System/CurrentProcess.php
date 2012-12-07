@@ -1,7 +1,6 @@
 <?php
 namespace Mozy\Core\System;
 
-use Mozy\Core;
 use Mozy\Core\Object;
 use Mozy\Core\Singleton;
 use Mozy\Core\Command;
@@ -11,17 +10,17 @@ class CurrentProcess extends Process implements Singleton {
     protected $system;
     protected $lock;
     protected $children = [];
-    protected static $maxChildren = 5;
+    protected static $maxChildren = 30;
 
     /**
-     * @restricted System
+     * @allow System
      */
     private static function construct( System $system ) {
         return parent::_construct_($system);
     }
 
     /**
-     * @restricted System
+     * @allow System
      */
     protected function __construct( System $system ) {
         $this->system = $system;
@@ -256,7 +255,7 @@ class CurrentProcess extends Process implements Singleton {
 #                echo "Child PID($pid) was already removed from child list. \n";
             }
             else {
-#                echo "Child PID($pid) was processed and removed from child list . \n";
+#                echo "Child PID($pid) was processed and removed from child list. \n";
                 $this->children[$pid]->processResponse();
                 unset($this->children[$pid]);
             }
@@ -384,25 +383,25 @@ class CurrentProcess extends Process implements Singleton {
             /* Change the process title */
             $this->title = 'Mozy Process ' . $this->id;
 
-            print("New child process PID(". $this->id .") created. \n");
+#            print("New child process PID(". $this->id .") created. \n");
 
             #TODO: need to reinstall signal handlers to allow children to have childran
 
             /* Execute internal child branch */
-            if( $childBranch->class->name == Core\InternalCommand ) {
+            if( $childBranch->class->name == \Mozy\Core\InternalCommand ) {
                 $this->in = $in;
                 $this->out = $out;
                 $this->err = $out;
 
                 $response = $childBranch();
-                $this->out->write($response);
+                $this->out->write(serialize($response));
 
                 /* Close the child */
                 $this->close();
             }
 
             /* Execute external child branch */
-            if( $childBranch->class->name == Core\ExternalCommand ) {
+            if( $childBranch->class->name == \Mozy\Core\ExternalCommand ) {
                 /* Redirect standard files  */
                 fclose(STDIN);
                 fclose(STDOUT);

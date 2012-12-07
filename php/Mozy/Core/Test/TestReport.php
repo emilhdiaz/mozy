@@ -1,7 +1,6 @@
 <?php
 namespace Mozy\Core\Test;
 
-use Mozy\Core;
 use Mozy\Core\Object;
 
 class TestReport extends Object {
@@ -78,7 +77,6 @@ class TestReport extends Object {
         $skippedTestScenarios = $unitTest->skipped;
         $skippedTestCases = $this->skippedTestCases;
 
-
         // check for incomplete test scenarios and test cases
         $incompleteTestScenarios = $unitTest->incomplete;
         $incompleteTestCases = $this->incompleteTestCases;
@@ -139,7 +137,7 @@ class TestReport extends Object {
 
             // check reporting mode
             if( ($testScenario->result == PASSED) && ($this->mode != 'all') )
-                return;
+                continue;
 
             // TEST CASES
             foreach($testScenario->testCases as $testCase) {
@@ -148,7 +146,7 @@ class TestReport extends Object {
 
                 // check reporting mode
                 if( ($testCase->result == PASSED) && ($this->mode != 'all') )
-                    return;
+                    continue;
 
                 $passed = count($testCase->passed);
                 $failed = count($testCase->failed);
@@ -178,7 +176,7 @@ class TestReport extends Object {
                 foreach($testCase->tests as $test) {
                     // check reporting mode
                     if( ($test->result == PASSED) && ($this->mode != 'all') )
-                        return;
+                        continue;
 
                     $output->text('    -> ');
                     $output->text($test->name, null, 'cyan');
@@ -199,7 +197,6 @@ class TestReport extends Object {
         $output->line('Test Complete.');
         $output->nl();
         return $output;
-
     }
 
     public function __toSerial() {

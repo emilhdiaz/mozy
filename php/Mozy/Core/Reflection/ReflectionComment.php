@@ -34,6 +34,9 @@ final class ReflectionComment implements \Reflector {
 
             $value = [];
             foreach(explode(',', trim($matches[2][$key])) as $pair) {
+                // check for no qualifier after annotation name
+                if( !$pair ) continue;
+
                 // $pair expected to be 'Text' or  'Text Text'
                 $pair = explode(' ', trim($pair));
                 $n = $pair[0];
@@ -70,6 +73,10 @@ final class ReflectionComment implements \Reflector {
 
     public function hasAnnotation($annotation) {
         return array_key_exists($annotation, $this->annotations);
+    }
+
+    public function setAnnotation($annotation, $value) {
+        $this->annotations[$annotation] = $value;
     }
 
     public static function export() {

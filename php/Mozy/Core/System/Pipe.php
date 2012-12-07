@@ -11,7 +11,7 @@ class Pipe extends Object implements IO {
     protected $resource;
 
     /**
-     * @restricted System
+     * @allow System
      */
     private static function construct( $key, $blocking = false, $mode = 0600 ) {
         return parent::_construct_( $key, $blocking, $mode );

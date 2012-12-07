@@ -12,7 +12,7 @@ class SharedMemory extends Object implements IO {
     protected $size;
 
     /**
-     * @restricted System
+     * @allow System
      */
     private static function construct( $key, $size = null, $blocking = false, $mode = 0600 ) {
         return parent::_construct_( $key, $size, $blocking, $mode );

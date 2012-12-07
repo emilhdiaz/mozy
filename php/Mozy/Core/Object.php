@@ -20,13 +20,15 @@ abstract class Object {
     public static function bootstrap() {}
 
     public function __sleep() {
+        #TODO: prevent Singletons from being serialized
         $serial = [];
-        $properties = $this->class->properties;
+
+        $properties = array_keys(get_class_vars(get_called_class()));
         foreach($properties as $property) {
-            if( $property->name == 'class' )
+            if( $property == 'class' )
                 continue;
 
-            $serial[] = $property->name;
+            $serial[] = $property;
         }
         return $serial;
     }

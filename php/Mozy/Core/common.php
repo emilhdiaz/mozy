@@ -1,6 +1,4 @@
 <?php
-namespace Mozy\Core;
-
 function registerClassPath( $classPath ) {
     set_include_path(get_include_path() . PATH_SEPARATOR . $classPath);
 }
@@ -94,7 +92,7 @@ function camelCase($string) {
 
 function get_class_from_filename($fileName) {
     $fileName = str_replace(ROOT, '', $fileName);
-    $className = str_replace('/', '\\', $fileName);
+    $className = str_replace(DIRECTORY_SEPARATOR, '\\', $fileName);
     $className = substr($className, 0, strrpos($className, '.'));
     $className = trim($className);
 
@@ -111,14 +109,14 @@ function get_class_from_filename($fileName) {
 }
 
 function get_path_from_namespace($namespace) {
-    $path = str_replace('\\', '/', $namespace);
+    $path = str_replace('\\', DIRECTORY_SEPARATOR, $namespace);
     $path = ROOT . $path;
     return $path;
 }
 
 function get_namespace_path($class) {
     $namespace = get_namespace($class);
-    $path = ROOT . str_replace('\\', '/', $namespace);
+    $path = ROOT . str_replace('\\', DIRECTORY_SEPARATOR, $namespace);
     return $path;
 }
 
@@ -128,7 +126,7 @@ function get_namespace($class) {
 
 function get_calling_frame() {
     $trace = debug_backtrace();
-    return StackFrame::construct($trace[1]);
+    return Mozy\Core\StackFrame::construct($trace[1]);
 }
 
 function get_calling_class() {

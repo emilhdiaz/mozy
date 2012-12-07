@@ -15,7 +15,7 @@ class Process extends Object {
     protected $status;
 
     /**
-     * @restricted CurrentProcess
+     * @allow CurrentProcess
      */
     private static function construct( $pid, Command $command, IO $in = null, IO $out = null, IO $err = null ) {
         return parent::_construct_( $pid, $command, $in, $out, $err );
@@ -77,7 +77,7 @@ class Process extends Object {
         /* Process response */
         #TODO: process response
         if( $this->callback ) {
-            $response = $this->out->readLine();
+            $response = unserialize($this->out->readLine());
             $this->callback->__invoke( $response );
         }
 
@@ -87,7 +87,7 @@ class Process extends Object {
 
     /**
      * Destroys the communication streams to the process.
-     * @restricted CurrentProcess
+     * @allow CurrentProcess
      */
     protected function closeStreams() {
         /* Tear down communication streams */

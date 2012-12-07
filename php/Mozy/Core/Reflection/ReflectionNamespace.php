@@ -1,7 +1,6 @@
 <?php
 namespace Mozy\Core\Reflection;
 
-use Mozy\Core;
 use Mozy\Core\Exception;
 
 final class ReflectionNamespace implements \Reflector {
@@ -22,7 +21,7 @@ final class ReflectionNamespace implements \Reflector {
     }
 
     public function getClass( $class ) {
-        if( !$namespace = Core\get_namespace( $class ) ) {
+        if( !$namespace = get_namespace( $class ) ) {
             $namespace = $this->name;
             $class = $namespace . '\\' . $class;
         }

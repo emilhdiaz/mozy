@@ -1,7 +1,6 @@
 <?php
 namespace Mozy\Core\Test;
 
-use Mozy\Core;
 use Mozy\Core\Object;
 use Mozy\Core\Exception;
 
@@ -23,7 +22,7 @@ class Assertion extends Object {
 
     public static function assertTrue($condition) {
         $result = (bool) assert($condition);
-        $condition = (string) Core\_S($condition) . ' is ' . 'TRUE';
+        $condition = (string) _S($condition) . ' is ' . 'TRUE';
         return Assertion::construct('AssertTrue', $condition, $result);
     }
 
@@ -41,7 +40,7 @@ class Assertion extends Object {
 
     public static function assertEqual($obj1, $obj2) {
         $result = (bool) ($obj1 === $obj2);
-        $condition = (string) Core\_S($obj1) . ' is equal to ' . Core\_S($obj2);
+        $condition = (string) _S($obj1) . ' is equal to ' . _S($obj2);
         return Assertion::construct('AssertEqual', $condition, $result);
     }
 

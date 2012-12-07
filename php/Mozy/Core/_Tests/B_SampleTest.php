@@ -5,7 +5,7 @@ use Mozy\Core\Test\TestScenario;
 use Mozy\Core\Test\TestException;
 
 /**
- * @requires PHP 5.4.7
+ * @requires PHP 5.4.9
  */
 class B_SampleTest extends TestScenario {
 
@@ -13,7 +13,7 @@ class B_SampleTest extends TestScenario {
 
     public function setUp() {
         parent::setUp();
-        $this->fixture->object = Object::construct();
+        $this->fixture->object = new \StdClass;
     }
 
     public function tearDown() {

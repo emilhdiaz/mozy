@@ -1,7 +1,6 @@
 <?php
 namespace Mozy\Core\Test;
 
-use Mozy\Core;
 use Mozy\Core\Object;
 use Mozy\Core\Exception;
 
@@ -16,10 +15,10 @@ class Test extends Object implements Testable {
     protected $result = PENDING;
 
     protected function __construct(TestCase $testCase, $input) {
-        $this->name = $testCase->shortName . Core\_S($input);
+        $this->name     = $testCase->shortName . _S(_A($input));
         $this->testCase = $testCase;
-        $this->fixture = $testCase->testScenario->fixture;
-        $this->input = Core\_A($input);
+        $this->fixture  = $testCase->testScenario->fixture;
+        $this->input    = _A($input);
     }
 
     public function __toString() {

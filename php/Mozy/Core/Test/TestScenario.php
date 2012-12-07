@@ -1,7 +1,6 @@
 <?php
 namespace Mozy\Core\Test;
 
-use Mozy\Core;
 use Mozy\Core\Object;
 use Mozy\Core\Singleton;
 use Mozy\Core\Reflection\ReflectionClass;
@@ -26,9 +25,9 @@ abstract class TestScenario extends Object implements Singleton, Testable {
     protected function __construct(UnitTest $unitTest) {
         $this->name = $this->class->name;
         $this->unitTest = $unitTest;
-        $this->requires = Core\_A($this->class->comment->annotation('requires'));
+        $this->requires = _A($this->class->comment->annotation('requires'));
 
-        $class = ReflectionClass::construct(Core\TestCase);
+        $class = ReflectionClass::construct(\Mozy\Core\TestCase);
         foreach( $this->class->methods(ReflectionMethod::IS_PUBLIC) as $test ) {
             // filter non test methods
             if( !preg_match(self::TestCaseNameRegex, $test->name) )

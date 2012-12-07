@@ -4,7 +4,7 @@ namespace Mozy\Core\AutoLoad;
 class ClassLoader extends Loader {
 
     public function load($className) {
-        $filePath = str_replace('\\', '/', $className);
+        $filePath = str_replace('\\', DIRECTORY_SEPARATOR, $className);
 
         foreach($this->extensions as $extension) {
             $fullFilePath = stream_resolve_include_path($filePath . $extension);

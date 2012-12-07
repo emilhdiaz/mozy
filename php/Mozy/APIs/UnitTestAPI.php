@@ -20,7 +20,8 @@ class UnitTestAPI extends API {
         global $framework;
         $unitTest = UnitTest::construct($stopOnFailure, $separateProcess);
         $unitTest->discoverTests($framework->class->namespace->name);
-        return $this->runUnitTest($unitTest, $stopOnFailure, $reportMode);
+        $report = $this->runUnitTest($unitTest, $stopOnFailure, $reportMode);
+        return $report;
     }
 
     public function testNamespace( $namespace, $stopOnFailure = false, $separateProcess = false, $reportMode = false ) {

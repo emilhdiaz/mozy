@@ -1,8 +1,6 @@
 <?php
 namespace Mozy\Core\Reflection;
 
-use Mozy\Core;
-
 final class ReflectionMethod extends \ReflectionMethod implements Documented {
     use Getters;
     use Callers;
@@ -10,15 +8,15 @@ final class ReflectionMethod extends \ReflectionMethod implements Documented {
     use Immutability;
 
     protected static $reflector;
-    protected $restricted;
+    protected $allow;
 
     public function __construct($class, $name) {
         parent::__construct($class, $name);
-        $this->restricted = Core\_A($this->comment->annotation('restricted'));
+        $this->allow = _A($this->comment->annotation('allow'));
 
         $namespace = $this->declaringClass->namespace;
-        foreach($this->restricted as &$class) {
-            $class = $namespace->class($class)->name;
+        foreach($this->allow as &$class) {
+            $class = ($class == 'all' ? 'all' : $namespace->class($class)->name);
         }
     }
 
@@ -47,7 +45,7 @@ final class ReflectionMethod extends \ReflectionMethod implements Documented {
     }
 
     public function isRestricted() {
-        return (bool) count($this->restricted);
+        return (bool) count($this->allow);
     }
 
     public function isDeclaringClass( $class ) {
@@ -65,12 +63,12 @@ final class ReflectionMethod extends \ReflectionMethod implements Documented {
         if( $this->isDeclaringClass($class) )
             return true;
 
-        // allow if in list of restricted classes
-        if( is_array($this->restricted) && in_array($class, $this->restricted) )
+        // allow if all classes are allowed
+        if( in_array('all', $this->allow) )
             return true;
 
-        // allow if is (single) restricted class
-        if( $this->restricted == $class )
+        // allow if in list of allowed classes
+        if( in_array($class, $this->allow) )
             return true;
 
         // allow subclasses if protected

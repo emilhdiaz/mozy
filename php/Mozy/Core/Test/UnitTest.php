@@ -1,7 +1,6 @@
 <?php
 namespace Mozy\Core\Test;
 
-use Mozy\Core;
 use Mozy\Core\Object;
 use Mozy\Core\Singleton;
 use RecursiveDirectoryIterator;
@@ -74,20 +73,20 @@ class UnitTest extends Object implements Singleton, Testable {
 
     public function discoverTests($namespace) {
         try{
-            $path = Core\get_path_from_namespace($namespace);
+            $path = get_path_from_namespace($namespace);
             $directory = new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::CURRENT_AS_FILEINFO | RecursiveDirectoryIterator::SKIP_DOTS);
             $directory = new RecursiveIteratorIterator($directory);
 
 
             foreach( $directory as $filePath ) {
-                $testScenario = Core\get_class_from_filename($filePath);
+                $testScenario = get_class_from_filename($filePath);
 
                 // filter non Test files
                 if( !preg_match(self::TestScenarioNameRegex, $testScenario) )
                     continue;
 
                 // filter non Test classes
-                if( !is_a($testScenario, Core\TestScenario, true) )
+                if( !is_a($testScenario, \Mozy\Core\TestScenario, true) )
                     continue;
 
                 $this->addTestScenario( $testScenario::construct($this) );
@@ -103,15 +102,7 @@ class UnitTest extends Object implements Singleton, Testable {
         global $framework;
 
         foreach($this->testScenarios as $testScenario) {
-
-            // run test scenario
-            if( $this->separateProcess ) {
-                $report = $framework->callAPI('UnitTest', 'testScenario', ['scenario'=>$testScenario->name, 'report'=>'all'], 'native', true);
-                print $report;
-            }
-
-            else
-                $testScenario->run();
+            $testScenario->run();
 
             // check if scenario has failed
             if( ($testScenario->result == FAILED) && ($this->stopOnFailure) ) {

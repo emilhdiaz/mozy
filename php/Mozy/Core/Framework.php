@@ -13,9 +13,9 @@ use Mozy\Core\System\System;
 
 require_once('common.php');
 
-define('ROOT', getcwd().'/');
+define('ROOT', getcwd().DIRECTORY_SEPARATOR);
 
-spl_autoload_register( 'Mozy\Core\coreAutoloader', true );
+spl_autoload_register( 'coreAutoloader', true );
 
 const Object                = 'Mozy\Core\Object';
 const Immutable             = 'Mozy\Core\Immutable';
@@ -91,7 +91,7 @@ final class Framework extends Object implements Singleton {
 
         // configure Error and Exception Handlers
 #        set_error_handler( 'Mozy\Core\errorHandler' );
-#        set_exception_handler( 'Mozy\Core\exceptionHandler' );
+        set_exception_handler( 'Mozy\Core\exceptionHandler' );
 #        register_shutdown_function('Mozy\Core\fatalErrorHandler');
         assert_options(ASSERT_WARNING, FALSE);
 
@@ -302,13 +302,15 @@ function exceptionHandler(\Exception $exception) {
 
     if( $exception instanceOf SemanticException ) {
         print $exception . PHP_EOL;
+        print $exception->getTraceAsString() . PHP_EOL;
     }
     elseif( $exception instanceOf Exception ) {
         print $exception . PHP_EOL;
-        print $exception->stackTrace . PHP_EOL;
+        print $exception->getTraceAsString() . PHP_EOL;
     }
     else {
         print $exception . PHP_EOL;
+        print $exception->getTraceAsString() . PHP_EOL;
     }
 
     exit($exception->code);

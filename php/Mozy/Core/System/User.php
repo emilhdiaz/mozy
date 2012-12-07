@@ -15,7 +15,7 @@ final class User extends Object implements Immutable {
     protected $hasRootPrivileges;
 
     /**
-     * @restricted System
+     * @allow System
      */
     private static function construct( $id, $name, $gid, $home, $shell, $password ) {
         return parent::_construct_( $id, $name, $gid, $home, $shell, $password );

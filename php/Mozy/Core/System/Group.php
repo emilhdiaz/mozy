@@ -12,7 +12,7 @@ final class Group extends Object implements Immutable {
     protected $members;
 
     /**
-     * @restricted System
+     * @allow System
      */
     private static function construct( $id, $name, $password, $members ) {
         return parent::_construct_( $id, $name, $password, $members );

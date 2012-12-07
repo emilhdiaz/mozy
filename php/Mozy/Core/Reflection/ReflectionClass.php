@@ -1,8 +1,6 @@
 <?php
 namespace Mozy\Core\Reflection;
 
-use Mozy\Core;
-
 class ReflectionClass extends \ReflectionClass implements Documented {
     use Getters;
     use Callers;
@@ -14,7 +12,7 @@ class ReflectionClass extends \ReflectionClass implements Documented {
 
     public function __construct($name) {
         parent::__construct($name);
-        $this->namespace = Core\get_namespace($name);
+        $this->namespace = get_namespace($name);
     }
 
     public function getNamespace() {
@@ -82,11 +80,11 @@ class ReflectionClass extends \ReflectionClass implements Documented {
     }
 
     public function isSingleton() {
-        return $this->implementsInterface(Core\Singleton);
+        return $this->implementsInterface(\Mozy\Core\Singleton);
     }
 
     public function isImmutable() {
-        return $this->implementsInterface(Core\Immutable);
+        return $this->implementsInterface(\Mozy\Core\Immutable);
     }
 
     public function isAncestorOf( $name ) {
@@ -101,10 +99,10 @@ class ReflectionClass extends \ReflectionClass implements Documented {
     }
 
     public function extend($extension) {
-        if( class_exits($extension) )
+        if( class_exists($extension) )
             throw new \Exception('Cannot redeclare class $extension as extention of ' . $this->name);
 
-        create_new_class($extension, $class->name);
+        create_new_class($extension, $this->name);
         return $extension;
     }
 

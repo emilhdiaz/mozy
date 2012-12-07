@@ -1,17 +1,19 @@
 <?php
 namespace Mozy\Core\Test;
 
-use Mozy\Core;
-
 trait Assertive {
     protected $record = true;
     protected $assertions = [];
+
+    public static function __callStatic( $name, $arguments ) {
+        return parent::__callStatic($name, $arguments);
+    }
 
     public function __call($name, $arguments) {
         if( !preg_match('/^assert\S+/', $name) ) {
             return parent::__call($name, $arguments);
         }
-        return $this->assert( call_user_func_array([Core\Assertion, $name], $arguments) );
+        return $this->assert( call_user_func_array([\Mozy\Core\Assertion, $name], $arguments) );
     }
 
     protected function assert(Assertion $assertion) {

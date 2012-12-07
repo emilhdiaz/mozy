@@ -1,116 +1,84 @@
-#!/var/lib/stickshift/c7acc3de0c4841dc8d96ff8547ded181/app-root/data/bin/php
+#!/usr/bin/env php
 <?php
+use Mozy\Core\Framework;
+use Mozy\Core\Object;
+use Mozy\Core\AsyncCallers;
+use Mozy\Core\System\System;
+use Mozy\Core\System\InternalCommand;
+use Mozy\Core\System\ExternalCommand;
 
-echo "Please enter your age: \n";
+require_once('Mozy/Core/Framework.php');
 
-$age = trim(fgets(STDIN));
+Framework::init();
 
-echo "You are $age year(s) old \n";
+class Test extends Object {
+    use AsyncCallers;
 
-sleep(5);
+    /**
+     * @allow all
+     */
+    protected function calculateAge( DateTime $dob, Closure $callback = null ) {
+        $now = new DateTime("now");
+        $age = $now->diff($dob)->format('%y');
+        return $age;
+    }
 
-exit();
-
-$MEMSIZE = 512; //  size of shared memory to allocate
-$SEMKEY = 1;   //  Semaphore key
-$SHMKEY = 2;   //  Shared memory key
-
-echo "Start.\n";
-
-// Create a semaphore
-$sem_id = sem_get($SEMKEY, 1);
-if ($sem_id === false)
-{
-    echo "Failed to create semaphore";
-    exit;
+    /**
+     * @allow all
+     * @async
+     */
+    protected function calculateAgeAsync( DateTime $dob, Closure $callback = null ) {
+        $now = new DateTime("now");
+        $age = $now->diff($dob)->format('%y');
+        sleep(1);
+        return $age;
+    }
 }
-else
-    echo "Created semaphore $sem_id.\n";
 
-// Acquire the semaphore
-if (! sem_acquire($sem_id))
-{
-    echo "Failed to acquire semaphore $sem_id.\n";
-    sem_remove($sem_id);
-    exit;
-}
-else
-    echo "Success acquiring semaphore $sem_id.\n";
+$system = System::construct();
+$me = $system->process;
+#$me->out->write( "Starting parent process with PID(".$me->id.")" );
 
-// Attach shared memory
-$shm_id = shm_attach($SHMKEY, $MEMSIZE);
-if ($shm_id === false)
-{
-    echo "Fail to attach shared memory.\n";
-    sem_remove($sem_id);
-    exit;
-}
-else
-    echo "Success to attach shared memory : $shm_id.\n";
+$test = Test::construct();
 
-// Write variable 1
-if (!shm_put_var($shm_id, 1, "Variable 1"))
-{
-    echo "Failed to put var 1 in shared memory $shm_id.\n";
+// synchronous call with return value
+print "Synchronous call says I am " . $test->calculateAge(new DateTime('8/12/1987')) . " year(s) old. \n";
 
-    // Clean up nicely
-    sem_remove($sem_id);
-    shm_remove($shm_id);
-    exit;
-}
-else
-    echo "Wrote var1 to shared memory.\n";
+// synchronous call with callback
+$test->calculateAge(new DateTime('8/12/1987'), function($age) {
+    print "Synchronous callback says I am " . $age . " year(s) old.\n";
+});
 
-// Write variable 2
-if (!shm_put_var($shm_id, 2, "Variable 2"))
-{
-    echo "Failed to put var 2 on shared memory $shm_id.\n";
+// asynchronous call with callback
+$test->calculateAgeAsync(new DateTime('8/12/1987'), function($age) {
+    print "Asynchronous callback says I am " . $age . " year(s) old.\n";
+});
+echo "Make sure im not waiting for asynchronous callback\n";
 
-    // Clean up nicely
-    sem_remove($sem_id);
-    shm_remove ($shm_id);
-    exit;
-}
-else
-    echo "Wrote var2 to shared memory.\n";
+/* Daemonize the process */
+#$system->process->daemonize('Mozy Application Server');
+#while( true ) {
+#    sleep(5);
+#}
 
-// Read variable 1
-$var1 = shm_get_var($shm_id, 1);
-if ($var1 === false)
-{
-    echo "Failed to retreive Var 1 from Shared memory $shm_id, " .
-         "return value=$var1.\n";
-}
-else
-    echo "Read var1=$var1.\n";
+/* Execute Internal Async Command */
+#$command = InternalCommand::construct( $calculate_age, new DateTime('8/12/1987') );
+#$process = $system->process->executeAsynchronous( $command, $callback );
 
-// Read variable 1
-$var2 = shm_get_var ($shm_id, 2);
-if ($var1 === false)
-{
-     echo "Failed to retrive Var 2 from Shared memory $shm_id, " .
-          "return value=$var2.\n";
-}
-else
-    echo "Read var2=$var2.\n";
+#$calculate_age(new DateTime('8/12/1987'), );
 
-// Release semaphore
-if (!sem_release($sem_id))
-    echo "Failed to release $sem_id semaphore.\n";
-else
-    echo "Semaphore $sem_id released.\n";
+/* Execute External Async Command */
+#$command = ExternalCommand::construct('php/scrap.php');
+#$process->out->readLine();
+#$process->in->write('8/12/1987');
+#$process->out->readLine();
 
-// Remove shared memory segment
-if (shm_remove ($shm_id))
-    echo "Shared memory successfully removed.\n";
-else
-    echo "Failed to remove $shm_id shared memory.\n";
+#$system->process->waitForChildren();
+#$me->out->write( "Parent script terminating now... bye bye!" );
 
-// Remove semaphore
-if (sem_remove($sem_id))
-    echo "Semaphore removed successfully.\n";
-else
-    echo "Failed to remove $sem_id semaphore.\n";
+#$system->process->quit();
+#$system->process->close();
+#$system->process->terminate();
+#$system->process->kill();
 
-echo "End.\n";
 ?>
