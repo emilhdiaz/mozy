@@ -37,9 +37,9 @@ class StackTrace extends Object {
     }
 
     public function __toString() {
-        $str = "    ". $this->currentFrame ."\n";
+        $str = "    ". $this->currentFrame . PHP_EOL;
         while ($this->hasNextFrame()) {
-            $str .= "    ". $this->nextFrame ."\n";
+            $str .= "    ". $this->nextFrame . PHP_EOL;
         }
         return $str;
     }

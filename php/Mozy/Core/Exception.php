@@ -4,24 +4,10 @@ namespace Mozy\Core;
 class Exception extends \Exception {
     use Getters;
 
-    const ClassNotFoundRegex            = '/^Class \'\S+\' not found.*/';
-    const InterfaceNotFoundRegex        = '/^Interface \'\S+\' not found.*/';
-    const TraitNotFoundRegex            = '/^Trait \'\S+\' not found.*/';
-
-    const AbstractDefinitionRegex       = '/^Class \S+ contains \d{1,} abstract methods? and must therefore be declared abstract.*/';
-    const MissingImplementationRegex    = '/^Non-abstract method \S+ must contain body.*/';
-
-    const UndefinedMethodRegex          = '/^Call to undefined method.*/';
-    const UndefinedPropertyRegex        = '/^Undefined property.*/';
-    const UndefinedConstantRegex        = '/[Uu]ndefined constant.*/';
-
-    const UnauthorizedMethodAccessRegex = '/^Call to (private|protected) method.*/';
-    const UnauthorizedPropertyAccessRegex = '/^Cannot access (private|protected) property.*/';
     const InvalidConstructionRegex      = '/^Call to (private|protected) (\S+)::__construct().*/';
 
     const MissingArgumentRegex          = '/^Argument \d{1,} passed to \S+ must be an instance of \S+ none given.*/';
     const MissingArgument2Regex         = '/^Missing argument \d{1,} for .*/';
-    const InvalidArgumentTypeRegex      = '/^Argument \d{1,} passed to \S+ must be an instance of \S+ (?!none)\S+ given.*/';
 
     const NullReferenceRegex            = '/^Undefined variable.*/';
     const NullDereferenceRegex          = '/^Trying to get property of non-object.*/';
@@ -33,9 +19,10 @@ class Exception extends \Exception {
 
     public $name;
     protected $stackTrace;
+    protected static $exceptionCode;
 
-    public function __construct($message="", $code=0, Exception $previous = null, $file=null, $line=null) {
-        parent::__construct($message, $code, $previous);
+    public function __construct($message="", Exception $previous = null, $file=null, $line=null) {
+        parent::__construct($message, 0, $previous);
         $this->file = $file ?: $this->file;
         $this->line = $line ?: $this->line;
         $this->name = get_called_class();
@@ -73,6 +60,10 @@ class Exception extends \Exception {
             . ' by ' . get_class_from_filename($this->file)
             . ':' .$this->line
         );
+    }
+
+    public function copy() {
+        return new static($this->message, $this, $this->file, $this->line);
     }
 }
 

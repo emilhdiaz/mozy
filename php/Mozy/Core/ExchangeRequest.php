@@ -1,7 +1,7 @@
 <?php
 namespace Mozy\Core;
 
-abstract class ExchangeRequest extends Object {
+abstract class ExchangeRequest extends Object implements Singleton {
     protected $endpoint;
     protected $api;
     protected $action;
@@ -15,12 +15,6 @@ abstract class ExchangeRequest extends Object {
         $this->action   = $action;
         $this->arguments= $arguments;
         $this->format   = $format;
-    }
-
-    abstract public function send();
-
-    public static function current() {
-
     }
 }
 ?>

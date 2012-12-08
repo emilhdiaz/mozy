@@ -3,6 +3,7 @@ namespace Mozy\Core\Test;
 
 use Mozy\Core\Object;
 use Mozy\Core\Exception;
+use Mozy\Core\System\InternalCommand;
 
 class Test extends Object implements Testable {
     use Assertive;
@@ -13,12 +14,14 @@ class Test extends Object implements Testable {
     protected $input;
     protected $failure;
     protected $result = PENDING;
+    protected $separateProcesses = false;
 
     protected function __construct(TestCase $testCase, $input) {
         $this->name     = $testCase->shortName . _S(_A($input));
         $this->testCase = $testCase;
-        $this->fixture  = $testCase->testScenario->fixture;
         $this->input    = _A($input);
+        $this->fixture  = $testCase->testScenario->fixture;
+        $this->separateProcesses = $testCase->testScenario->separateProcesses;
     }
 
     public function __toString() {
@@ -26,29 +29,49 @@ class Test extends Object implements Testable {
     }
 
     public function run() {
+        global $process;
+
         try{
             $test = $this->testCase->prototype->bindTo($this, $this);
 
-            // turn on output buffering
-            ob_start();
-            ob_clean();
+            if( $this->separateProcesses ) {
+                $localTest;
+                $command = InternalCommand::construct( $test, $this->input );
+                $process->executeAsynchronous( $command, function( $remoteTest ) use( &$localTest ) {
+                    $localTest = $remoteTest;
+                });
 
-            call_user_func_array($test, $this->input);
+                $process->waitForChildren();
 
-            // check for expected output
-            if( $this->testCase->expectedOutput )
-                $this->assertOutput($this->testCase->expectedOutput);
+                if( $localTest instanceOf Exception )
+                    throw $localTest->copy();
 
-            //check for expected exception
-            if( $this->testCase->expectedException )
-                $this->assertException(null, $this->testCase->expectedException);
+                $this->failure = $localTest->failure;
+                $this->result = $localTest->result;
+                $this->assertions = $localTest->assertions;
+            }
+            else {
+                // turn on output buffering
+                ob_start();
+                ob_clean();
 
-            // finished with test defined assertions
-            $this->record = false;
+                call_user_func_array($test, $this->input);
 
-            // check for unexpected output
-            if( !$this->testCase->expectedOutput )
-                $this->assertNoOutput();
+                // check for expected output
+                if( $this->testCase->expectedOutput )
+                    $this->assertOutput($this->testCase->expectedOutput);
+
+                //check for expected exception
+                if( $this->testCase->expectedException )
+                    $this->assertException(null, $this->testCase->expectedException);
+
+                // finished with test defined assertions
+                $this->record = false;
+
+                // check for unexpected output
+                if( !$this->testCase->expectedOutput )
+                    $this->assertNoOutput();
+            }
         }
         // check for failures
         catch( TestFailureException $e ) {

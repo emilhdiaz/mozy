@@ -46,16 +46,21 @@ class Pipe extends Object implements IO {
     }
 
     public function write( $data ) {
-        $data = trim($data);
-        $bytes = fwrite($this->resource, $data . "\n");
+        $data = convert($data);
+        $bytes = fwrite($this->resource, $data);
 
-#        echo "Wrote ($bytes bytes): $data \n";
+        debug("Wrote ($bytes bytes): $data");
+    }
+
+    public function writeLine( $data ) {
+        $this->write($data);
+        fwrite($this->resource, PHP_EOL);
     }
 
     public function readLine() {
         $data = trim(fgets($this->resource));
 
-#        echo "Read (" . strlen($data) . " bytes): $data \n";
+        debug("Read (" . strlen($data) . " bytes): $data");
         return $data;
     }
 
@@ -72,7 +77,7 @@ class Pipe extends Object implements IO {
     }
 
     public function remove() {
-#        echo "Destroying pipe file " . $this->path . "\n";
+        debug("Destroying pipe file " . $this->path);
         $this->close();
         unlink($this->path);
         unset($this);

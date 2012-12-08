@@ -77,7 +77,8 @@ class Process extends Object {
         /* Process response */
         #TODO: process response
         if( $this->callback ) {
-            $response = unserialize($this->out->readLine());
+            $response = $this->out->readLine();
+            $response = unserialize($response);
             $this->callback->__invoke( $response );
         }
 

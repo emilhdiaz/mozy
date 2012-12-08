@@ -18,6 +18,16 @@ class StdIn extends Object implements IO, Singleton {
         $this->open();
     }
 
+    public function setPath( $path ) {
+        if( !file_exists($path) ) {
+            throw new \Exception('File description path is invalid.');
+        }
+
+        $this->path = $path;
+        $this->resource = null;
+        $this->open();
+    }
+
     public function open() {
         if( $this->isOpen() )
             return;
@@ -38,7 +48,7 @@ class StdIn extends Object implements IO, Singleton {
     public function readLine() {
         $data = trim(fgets($this->resource));
 
-#        fwrite("Read (" . strlen($data) . " bytes): $data \n");
+        debug("Read (" . strlen($data) . " bytes): $data");
         return $data;
     }
 

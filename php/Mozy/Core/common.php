@@ -1,61 +1,86 @@
 <?php
+
+function in() {
+
+}
+
+function out( $object ) {
+    global $process;
+
+    $process->out->writeLine($object);
+}
+
+function debug( $string ) {
+#    fwrite(STDERR, $string . PHP_EOL . PHP_EOL);
+}
+
 function registerClassPath( $classPath ) {
     set_include_path(get_include_path() . PATH_SEPARATOR . $classPath);
 }
 
-function coreAutoloader($class) {
-    // prepare namespace path
-    restore_include_path();
-    $namespacePath = get_namespace_path($class);
-    registerClassPath($namespacePath);
-    foreach(['/_Traits', '/_Interfaces', '/_Exceptions', '/_Tests'] as $subdir) {
-        registerClassPath($namespacePath . $subdir);
+##TODO move method to more appropriate class
+#function convert($data, $from, $to) {
+#    $convert = function(&$data, $key, array $transformation) {
+#        list($from, $to) = $transformation;
+#
+#        switch($from) {
+#            case 'serial':
+#                switch($to) {
+#                    case 'native':
+#                        $data = Factory::unserialize($data);
+#                        break;
+#                }
+#
+#            case 'native':
+#                switch($to) {
+#                    case 'serial':
+#                        $data = serialize($data);
+#                        break;
+#                }
+#
+#        }
+#    };
+#
+#    if( is_array($data) )
+#        array_walk_recursive($data, $convert, [$from, $to]);
+#
+#    else
+#        $convert($data, 0, [$from, $to]);
+#
+#    return $data;
+#
+#}
+
+function convert( $output ) {
+    global $framework;
+
+    $format = $framework->overrideFormat ? $framework->overrideFormat : $framework->currentRequest->format;
+
+    debug($format);
+
+    /* Transform the object to a string based on the request format */
+    switch($format) {
+        case 'string':
+            return (string) $output;
+            break;
+
+        case 'serial':
+            return serialize($output);
+            break;
+
+        case 'native':
+            return var_export($output, true);
+            break;
+
+        case 'console':
+            return $output->__toText();
+
+        default:
+            return (string) $output;
+            break;
     }
 
-    // search for file in namespace path
-    $nameParts = explode('\\', $class);
-    $shortClassName = array_pop($nameParts);
-    $fullFilePath = stream_resolve_include_path($shortClassName . '.php');
-
-    // check if asset exists
-    if( $fullFilePath ) {
-        include_once($fullFilePath);
-        if( class_exists($class) && method_exists($class, 'bootstrap') )
-            $class::bootstrap();
-    }
-}
-
-#TODO move method to more appropriate class
-function convert($data, $from, $to) {
-    $convert = function(&$data, $key, array $transformation) {
-        list($from, $to) = $transformation;
-
-        switch($from) {
-            case 'serial':
-                switch($to) {
-                    case 'native':
-                        $data = Factory::unserialize($data);
-                        break;
-                }
-
-            case 'native':
-                switch($to) {
-                    case 'serial':
-                        $data = serialize($data);
-                        break;
-                }
-
-        }
-    };
-
-    if( is_array($data) )
-        array_walk_recursive($data, $convert, [$from, $to]);
-
-    else
-        $convert($data, 0, [$from, $to]);
-
-    return $data;
-
+    return trim($output);
 }
 
 function create_new_class($class, $base = null) {
@@ -74,8 +99,8 @@ function create_new_class($class, $base = null) {
     $class = str_replace('\\', '_', $class);
 
     $definition =
-        "namespace " . $namespace . ";\n" .
-        "class " . $class . ($base ? " extends " . $base : '') . " {}\n\n"
+        "namespace " . $namespace . ";" . PHP_EOL .
+        "class " . $class . ($base ? " extends " . $base : '') . " {}" . PHP_EOL
     ;
 
     eval($definition);
@@ -97,18 +122,17 @@ function get_class_from_filename($fileName) {
     $className = trim($className);
 
     #TODO: Find a better way to handle these special namespace subdirectories
-    $className = str_replace('_Traits\\', '', $className);
-    $className = str_replace('_Interfaces\\', '', $className);
     $className = str_replace('_Exceptions\\', '', $className);
+    $className = str_replace('_Interfaces\\', '', $className);
     $className = str_replace('_Tests\\', '', $className);
-    $className = str_replace('Autoloaders\\', '', $className);
+    $className = str_replace('_Traits\\', '', $className);
 
     $className = class_exists($className) ? $className : $fileName;
 
     return $className;
 }
 
-function get_path_from_namespace($namespace) {
+function get_path_namespace($namespace) {
     $path = str_replace('\\', DIRECTORY_SEPARATOR, $namespace);
     $path = ROOT . $path;
     return $path;

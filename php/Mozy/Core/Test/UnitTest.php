@@ -73,7 +73,7 @@ class UnitTest extends Object implements Singleton, Testable {
 
     public function discoverTests($namespace) {
         try{
-            $path = get_path_from_namespace($namespace);
+            $path = get_path_namespace($namespace);
             $directory = new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::CURRENT_AS_FILEINFO | RecursiveDirectoryIterator::SKIP_DOTS);
             $directory = new RecursiveIteratorIterator($directory);
 

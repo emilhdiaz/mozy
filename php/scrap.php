@@ -37,23 +37,23 @@ class Test extends Object {
 
 $system = System::construct();
 $me = $system->process;
-#$me->out->write( "Starting parent process with PID(".$me->id.")" );
+#$me->out->writeLine( "Starting parent process with PID(".$me->id.")" );
 
 $test = Test::construct();
 
 // synchronous call with return value
-print "Synchronous call says I am " . $test->calculateAge(new DateTime('8/12/1987')) . " year(s) old. \n";
+debug("Synchronous call says I am " . $test->calculateAge(new DateTime('8/12/1987')) . " year(s) old.");
 
 // synchronous call with callback
 $test->calculateAge(new DateTime('8/12/1987'), function($age) {
-    print "Synchronous callback says I am " . $age . " year(s) old.\n";
+    debug("Synchronous callback says I am " . $age . " year(s) old.");
 });
 
 // asynchronous call with callback
 $test->calculateAgeAsync(new DateTime('8/12/1987'), function($age) {
-    print "Asynchronous callback says I am " . $age . " year(s) old.\n";
+    debug("Asynchronous callback says I am " . $age . " year(s) old.");
 });
-echo "Make sure im not waiting for asynchronous callback\n";
+debug("Make sure im not waiting for asynchronous callback");
 
 /* Daemonize the process */
 #$system->process->daemonize('Mozy Application Server');
@@ -70,11 +70,11 @@ echo "Make sure im not waiting for asynchronous callback\n";
 /* Execute External Async Command */
 #$command = ExternalCommand::construct('php/scrap.php');
 #$process->out->readLine();
-#$process->in->write('8/12/1987');
+#$process->in->writeLine('8/12/1987');
 #$process->out->readLine();
 
 #$system->process->waitForChildren();
-#$me->out->write( "Parent script terminating now... bye bye!" );
+#$me->out->writeLine( "Parent script terminating now... bye bye!" );
 
 #$system->process->quit();
 #$system->process->close();

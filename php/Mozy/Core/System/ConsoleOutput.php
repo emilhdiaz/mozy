@@ -4,7 +4,7 @@ namespace Mozy\Core\System;
 use Mozy\Core\Object;
 use Mozy\Core\Singleton;
 
-class Output extends Object implements Singleton {
+class ConsoleOutput extends Object implements Singleton {
     protected $items = [];
     protected $overrides = [];
 
@@ -114,7 +114,7 @@ class Output extends Object implements Singleton {
                     $text = str_replace($override['text'], $replacement, $text);
                 }
             }
-            $output .= ($text ? $modifier . $text : '') . ($nl ? "\n" : '');
+            $output .= ($text ? $modifier . $text : '') . ($nl ? PHP_EOL : '');
         }
         $this->flush();
         return $output;

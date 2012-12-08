@@ -46,11 +46,11 @@ class SharedMemory extends Object implements IO {
     }
 
     public function write( $data ) {
-        $data = trim($data);
-        $bytes = strlen($data);
+        $data = convert($data);
         shm_put_var( $this->resource, 1, $data);
+        $bytes = strlen($data);
 
-#        echo "Wrote ($bytes bytes): $data \n";
+        debug("Wrote ($bytes bytes): $data");
     }
 
     public function readLine() {
@@ -65,7 +65,7 @@ class SharedMemory extends Object implements IO {
 
         shm_put_var( $this->resource, 1, null );
 
-#        echo "Read (" . strlen($data) . " bytes): $data \n";
+        debug("Read (" . strlen($data) . " bytes): $data");
         return $data;
     }
 
@@ -81,7 +81,7 @@ class SharedMemory extends Object implements IO {
     }
 
     public function remove() {
-#        echo "Destroying shared memory " . $this->path . "\n";
+        debug("Destroying shared memory " . $this->path);
         shm_remove( $this->resource );
         $this->close();
         unset($this);

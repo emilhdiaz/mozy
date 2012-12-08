@@ -18,6 +18,16 @@ class StdOut extends Object implements IO, Singleton {
         $this->open();
     }
 
+    public function setPath( $path ) {
+        if( !file_exists($path) ) {
+            throw new \Exception('File description path is invalid.');
+        }
+
+        $this->path = $path;
+        $this->resource = null;
+        $this->open();
+    }
+
     public function open() {
         if( $this->isOpen() )
             return;
@@ -32,10 +42,15 @@ class StdOut extends Object implements IO, Singleton {
     }
 
     public function write( $data ) {
-        $data = trim($data);
-        $bytes = fwrite($this->resource, $data . "\n");
+        $data = convert($data);
+        $bytes = fwrite($this->resource, $data);
 
-#        fwrite(STDERR, "Wrote ($bytes bytes): $data \n");
+        debug("Wrote ($bytes bytes): $data");
+    }
+
+    public function writeLine( $data ) {
+        $this->write($data);
+        fwrite($this->resource, PHP_EOL);
     }
 
     public function readLine() {

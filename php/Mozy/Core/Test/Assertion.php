@@ -57,5 +57,12 @@ class Assertion extends Object {
         $condition = (string) "No output expected, received '" . $output ."'";
         return Assertion::construct('AssertNoOutput', $condition, $result);
     }
+
+    public static function assertIsClass( Object $object, $className ) {
+        $objectClass = get_class($object);
+        $result = (bool) ($objectClass == $className);
+        $condition = (string) 'Expected object of class ' . $className . ', received object of class ' . $objectClass;
+        return Assertion::construct('AssertIsClass', $condition, $result);
+    }
 }
 ?>

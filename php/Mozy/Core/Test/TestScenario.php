@@ -20,7 +20,7 @@ abstract class TestScenario extends Object implements Singleton, Testable {
     // test pre-conditions
     protected $fixture;
     protected $requires;
-
+    protected $separateProcesses = false;
 
     protected function __construct(UnitTest $unitTest) {
         $this->name = $this->class->name;

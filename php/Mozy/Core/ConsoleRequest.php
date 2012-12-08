@@ -3,21 +3,7 @@ namespace Mozy\Core;
 
 class ConsoleRequest extends ExchangeRequest {
 
-    protected function __construct($endpoint, $api, $action, $arguments = [], $format = 'serial') {
-        parent::__construct($endpoint, $api, $action, $arguments, $format);
-    }
-
-    public function send() {
-        global $framework;
-
-        $command = $framework->console->command($this->endpoint, $this->api, $this->action, $this->arguments, $this->format);
-
-        exec($command, $output, $exitCode);
-        $result = implode('', $output);
-        return  convert($result, $this->format, 'native');
-    }
-
-    public static function current() {
+    protected function __construct() {
         $command = implode(' ', $_SERVER['argv']);
         $command = explode('--', $command);
 
@@ -53,11 +39,11 @@ class ConsoleRequest extends ExchangeRequest {
         if( $format = array_value($arguments, 'format') )
             unset($arguments['format']);
         else
-            $format = 'none';
+            $format = 'console';
 
-        $arguments = convert($arguments, $format, 'native');
+#        $arguments = convert($arguments, $format, 'native');
 
-        return static::construct($endpoint, $api, $action, $arguments, $format);
+        parent::__construct($endpoint, $api, $action, $arguments, $format);
     }
 }
 ?>

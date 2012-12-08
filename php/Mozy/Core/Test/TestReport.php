@@ -2,6 +2,7 @@
 namespace Mozy\Core\Test;
 
 use Mozy\Core\Object;
+use Mozy\Core\System\ConsoleOutput;
 
 class TestReport extends Object {
     protected $unitTest;
@@ -56,7 +57,7 @@ class TestReport extends Object {
 
         $unitTest = $this->unitTest;
 
-        $output = $framework->system->console->output;
+        $output = ConsoleOutput::construct();
 
         $output->overrides(PASSED, 'bold', 'green');
         $output->overrides(FAILED, 'bold', 'red');

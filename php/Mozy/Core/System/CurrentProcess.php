@@ -177,7 +177,7 @@ class CurrentProcess extends Process implements Singleton {
 
         $this->terminateChildren();
 
-        throw new \Exception("Process PID(". $this->id .") terminated\n");
+        throw new \Exception("Process PID(". $this->id .") terminated.");
         exit(0);
     }
 
@@ -252,10 +252,10 @@ class CurrentProcess extends Process implements Singleton {
         $pid = pcntl_wait( $status, WNOHANG);
         while( $pid > 0 ) {
             if( !array_key_exists($pid, $this->children) ) {
-#                echo "Child PID($pid) was already removed from child list. \n";
+                debug("Child PID($pid) was already removed from child list.");
             }
             else {
-#                echo "Child PID($pid) was processed and removed from child list. \n";
+                debug("Child PID($pid) was processed and removed from child list.");
                 $this->children[$pid]->processResponse();
                 unset($this->children[$pid]);
             }
@@ -280,8 +280,6 @@ class CurrentProcess extends Process implements Singleton {
     }
 
     public function daemonize( $name ) {
-        $log = 'daemon.log';
-
         /* Check if already a daemon */
         if ( $this->parentID == 1 )
             throw new \Exception('Currently running as daemon, cannot daemonize again');
@@ -336,7 +334,7 @@ class CurrentProcess extends Process implements Singleton {
             $STDOUT = fopen('/dev/null', 'ab');
             $STDERR = fopen('/dev/null', 'ab');
 
-            error_log("Started $name (Daemon PID " . $this->id . ") \n", 3, $log);
+            debug("Started $name (Daemon PID " . $this->id . ")");
 
             return;
         }
@@ -353,8 +351,11 @@ class CurrentProcess extends Process implements Singleton {
     }
 
     public function fork( Command $childBranch, \Closure $localCallback = null, InternalCommand $parentBranch = null, $openPipes = true ) {
+        global $framework;
+
         $in;
         $out;
+
         if( count($this->children) >= self::$maxChildren ) {
             throw new \Exception("Reached max limit (" . self::$maxChildren . ") of children");
         }
@@ -374,6 +375,9 @@ class CurrentProcess extends Process implements Singleton {
 
         /* Execute command in child */
         if ($pid == 0) {
+            /* Change the default exchange format to serial */
+            $framework->overrideFormat = 'serial';
+
             /* Need to reset children since my children are not children's children! */
             $this->children = [];
 
@@ -383,7 +387,7 @@ class CurrentProcess extends Process implements Singleton {
             /* Change the process title */
             $this->title = 'Mozy Process ' . $this->id;
 
-#            print("New child process PID(". $this->id .") created. \n");
+            debug("New child process PID(". $this->id .") created.");
 
             #TODO: need to reinstall signal handlers to allow children to have childran
 
@@ -391,10 +395,11 @@ class CurrentProcess extends Process implements Singleton {
             if( $childBranch->class->name == \Mozy\Core\InternalCommand ) {
                 $this->in = $in;
                 $this->out = $out;
-                $this->err = $out;
+                $this->err = fopen('/dev/null', 'ab');
 
                 $response = $childBranch();
-                $this->out->write(serialize($response));
+
+                $this->out->writeLine($response);
 
                 /* Close the child */
                 $this->close();
@@ -411,7 +416,7 @@ class CurrentProcess extends Process implements Singleton {
                     global $STDIN, $STDOUT, $STDERR;
                     $STDIN  = fopen($in->path, 'r+');
                     $STDOUT = fopen($out->path, 'r+');
-                    $STDERR = fopen('temp.err', 'w+');
+                    $STDERR = fopen('/dev/null', 'ab');
                 }
                 pcntl_exec($childBranch->command, $childBranch->arguments);
             }

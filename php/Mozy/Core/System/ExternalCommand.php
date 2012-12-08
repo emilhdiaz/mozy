@@ -21,11 +21,15 @@ class ExternalCommand extends Object implements Command {
 
         // escape arguments
         foreach($this->arguments as $argument) {
+            if( !$argument ) continue;
+
             $command .= escapeshellarg($argument) . ' ';
         }
 
         // escape options
         foreach($this->options as $option => $value) {
+            if( !$option ) continue;
+
             $command .= escapeshellarg( '--' . $option . ' ' . $value) . ' ';
         }
 
