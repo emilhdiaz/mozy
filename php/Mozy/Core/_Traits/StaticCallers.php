@@ -14,10 +14,10 @@ trait StaticCallers {
         /* Delegate to Declared Method */
         if( method_exists($class, $name) ) {
             $method = ReflectionMethod::construct($class, $name);
-            $frame = get_calling_frame();
+            $caller = get_calling_class();
 
-            if( !$method->isAllowedFor($frame->caller) )
-                throw new UnauthorizedMethodAccessException($name, null, $frame->caller, $frame->line);
+            if( !$method->isAllowedFor($caller) )
+                throw new UnauthorizedMethodAccessException($name);
 
             $method->setAccessible( true );
             return $method->invokeArgs(null, $arguments);
@@ -29,8 +29,7 @@ trait StaticCallers {
         if( in_array( $name, ['construct', '_construct_'] ) )
             return Factory::instance(ReflectionClass::construct($class), $arguments);
 
-        $frame = get_calling_frame();
-        throw new UndefinedMethodException($name, null, $frame->caller, $frame->line);
+        throw new UndefinedMethodException($name);
     }
 }
 ?>

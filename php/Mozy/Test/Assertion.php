@@ -1,5 +1,5 @@
 <?php
-namespace Mozy\Core\Test;
+namespace Mozy\Test;
 
 use Mozy\Core\Object;
 use Mozy\Core\Exception;

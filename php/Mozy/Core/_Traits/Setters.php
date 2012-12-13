@@ -14,22 +14,20 @@ trait Setters {
         /* Indirect Getter Access */
         if( method_exists($class, $setter) ) {
             $method = ReflectionMethod::construct($class, $setter);
-            $frame = get_calling_frame();
+            $caller = get_calling_class();
 
-            if( !$method->isAllowedFor($frame->caller) )
-                throw new UnauthorizedPropertyAccessException($name, null, $frame->caller, $frame->line);
+            if( !$method->isAllowedFor($caller) )
+                throw new UnauthorizedPropertyAccessException($name);
 
             return $this->$setter($value);
         }
 
         /* Default private write access */
         if( !property_exists($class, $name) ) {
-            $frame = get_calling_frame();
-            throw new UndefinedPropertyException($name, null, $frame->caller, $frame->line);
+            throw new UndefinedPropertyException($name);
         }
 
-        $frame = get_calling_frame();
-        throw new UnauthorizedPropertyAccessException($name, null, $frame->caller, $frame->line);
+        throw new UnauthorizedPropertyAccessException($name);
     }
 }
 ?>

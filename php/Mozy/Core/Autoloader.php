@@ -26,19 +26,41 @@ abstract class Autoloader {
         }
 
         /* Locate File In Namespace Path */
-        foreach( static::$extensions as $extension ) {
-            $fullFilePath = stream_resolve_include_path( $resourceName . $extension );
+    	$extension = '.php';
+    	$filePath = $resourceName . $extension;
+        $fullFilePath = stream_resolve_include_path( $filePath );
 
-            /* Check if Resource Exists */
-            if( $fullFilePath ) {
-                include_once($fullFilePath);
+        /* Check if resource exists with the current extension */
+        if( $fullFilePath ) {
+            include_once($fullFilePath);
 
-                /* Bootstrap Class */
-                if( class_exists($resource) && method_exists($resource, 'bootstrap') )
-                    $resource::bootstrap();
-                return;
+			/* Looking for a Trait */
+            if( strpos($fullFilePath, '_Traits/') !== false) {
+            	if( !trait_exists($resource) )
+            		throw new TraitNotFoundError();
             }
+
+            /* Looking for an Interface */
+            else if( strpos($fullFilePath, '_Interfaces/') !== false) {
+            	if( !interface_exists($resource) )
+            		throw new InterfaceNotFoundError();
+            }
+
+            /* Looking for a Class */
+            else  {
+				if( !class_exists($resource) )
+					throw new ClassNotFoundError();
+
+            	/* Bootstrap Class */
+            	if( method_exists($resource, 'bootstrap') ) {
+                	$resource::bootstrap();
+            	}
+			}
+			return;
         }
+
+        /* At this point the file was not found */
+        throw new FileNotFoundError("File '$filePath' not found");
     }
 
     /**

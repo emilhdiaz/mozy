@@ -15,8 +15,7 @@ trait Getters {
 
         /* Default (public read access) */
         if( !property_exists($class, $name) ) {
-            $frame = get_calling_frame();
-            throw new UndefinedPropertyException($name, null, $frame->caller, $frame->line);
+            throw new UndefinedPropertyException($name);
         }
 
         return $this->$name;

@@ -20,7 +20,8 @@ class ReflectionClass extends \ReflectionClass implements Documented {
     }
 
     public function getParentClass() {
-        return ReflectionClass::construct(get_parent_class($this->name));
+    	$parent = get_parent_class($this->name);
+        return $parent ? ReflectionClass::construct($parent) : null;
     }
 
     public function getParentClasses() {
@@ -80,11 +81,19 @@ class ReflectionClass extends \ReflectionClass implements Documented {
     }
 
     public function isSingleton() {
-        return $this->implementsInterface(\Mozy\Core\Singleton);
+        return $this->implementsInterface('Mozy\Core\Singleton');
     }
 
     public function isImmutable() {
-        return $this->implementsInterface(\Mozy\Core\Immutable);
+        return $this->implementsInterface('Mozy\Core\Immutable');
+    }
+
+    public function isException() {
+    	return $this->isSubclassOf('\Exception');
+    }
+
+    public function isReflector() {
+    	return $this->implementsInterface('\Reflector');
     }
 
     public function isAncestorOf( $name ) {
@@ -99,7 +108,7 @@ class ReflectionClass extends \ReflectionClass implements Documented {
     }
 
     public function extend($extension) {
-        if( class_exists($extension) )
+        if( class_exists($extension, false) )
             throw new \Exception('Cannot redeclare class $extension as extention of ' . $this->name);
 
         create_new_class($extension, $this->name);

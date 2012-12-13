@@ -18,50 +18,26 @@ function registerClassPath( $classPath ) {
     set_include_path(get_include_path() . PATH_SEPARATOR . $classPath);
 }
 
-##TODO move method to more appropriate class
-#function convert($data, $from, $to) {
-#    $convert = function(&$data, $key, array $transformation) {
-#        list($from, $to) = $transformation;
-#
-#        switch($from) {
-#            case 'serial':
-#                switch($to) {
-#                    case 'native':
-#                        $data = Factory::unserialize($data);
-#                        break;
-#                }
-#
-#            case 'native':
-#                switch($to) {
-#                    case 'serial':
-#                        $data = serialize($data);
-#                        break;
-#                }
-#
-#        }
-#    };
-#
-#    if( is_array($data) )
-#        array_walk_recursive($data, $convert, [$from, $to]);
-#
-#    else
-#        $convert($data, 0, [$from, $to]);
-#
-#    return $data;
-#
-#}
-
 function convert( $output ) {
     global $framework;
 
-    $format = $framework->overrideFormat ? $framework->overrideFormat : $framework->currentRequest->format;
+    $format = (
+    	$framework->overrideFormat ?
+    	$framework->overrideFormat :
+    	(
+    		$framework->currentRequest ?
+    		$framework->currentRequest->format :
+    		null
+    	)
+    );
+
 
     debug($format);
 
     /* Transform the object to a string based on the request format */
     switch($format) {
         case 'string':
-            return (string) $output;
+            return _S($output, false);
             break;
 
         case 'serial':
@@ -76,7 +52,7 @@ function convert( $output ) {
             return $output->__toText();
 
         default:
-            return (string) $output;
+            return _S($output);
             break;
     }
 
@@ -89,18 +65,18 @@ function create_new_class($class, $base = null) {
     $base = preg_replace("/[^A-Za-z0-9_\\\]/","", $base);
 
     // isolate namespace
-    $namespace = substr($class, 0, strrpos($class, '\\'));
+    $namespace = substr($class, 0, strrpos($class, NAMESPACE_SEPARATOR));
 
     // remove leading namespace
-    $class = str_replace($namespace.'\\', '', $class);
-    $base = str_replace($namespace.'\\', '', $base);
+    $class = str_replace($namespace . NAMESPACE_SEPARATOR, '', $class);
+    $base = str_replace($namespace . NAMESPACE_SEPARATOR, '', $base);
 
     // convert remaining namespace to underscore
-    $class = str_replace('\\', '_', $class);
+    $class = str_replace(NAMESPACE_SEPARATOR, '_', $class);
 
     $definition =
         "namespace " . $namespace . ";" . PHP_EOL .
-        "class " . $class . ($base ? " extends " . $base : '') . " {}" . PHP_EOL
+        "class " . $class . ($base ? " extends \\" . $base : '') . " {}" . PHP_EOL
     ;
 
     eval($definition);
@@ -116,8 +92,8 @@ function camelCase($string) {
 }
 
 function get_class_from_filename($fileName) {
-    $fileName = str_replace(ROOT, '', $fileName);
-    $className = str_replace(DIRECTORY_SEPARATOR, '\\', $fileName);
+	$className = str_replace(ROOT, '', $fileName);
+    $className = str_replace(DIRECTORY_SEPARATOR, NAMESPACE_SEPARATOR, $className);
     $className = substr($className, 0, strrpos($className, '.'));
     $className = trim($className);
 
@@ -127,25 +103,29 @@ function get_class_from_filename($fileName) {
     $className = str_replace('_Tests\\', '', $className);
     $className = str_replace('_Traits\\', '', $className);
 
-    $className = class_exists($className) ? $className : $fileName;
+    $nameParts = explode(NAMESPACE_SEPARATOR, $className);
+    $shortClassName = array_pop($nameParts);
+
+    if( !preg_match('/^[A-Z]/', $shortClassName) )
+    	return false;
 
     return $className;
 }
 
 function get_path_namespace($namespace) {
-    $path = str_replace('\\', DIRECTORY_SEPARATOR, $namespace);
+    $path = str_replace(NAMESPACE_SEPARATOR, DIRECTORY_SEPARATOR, $namespace);
     $path = ROOT . $path;
     return $path;
 }
 
 function get_namespace_path($class) {
     $namespace = get_namespace($class);
-    $path = ROOT . str_replace('\\', DIRECTORY_SEPARATOR, $namespace);
+    $path = ROOT . str_replace(NAMESPACE_SEPARATOR, DIRECTORY_SEPARATOR, $namespace);
     return $path;
 }
 
 function get_namespace($class) {
-    return substr($class, (int) 0, strrpos($class, '\\'));
+    return substr($class, (int) 0, strrpos($class, NAMESPACE_SEPARATOR));
 }
 
 function get_calling_frame() {
@@ -155,7 +135,7 @@ function get_calling_frame() {
 
 function get_calling_class() {
     $trace = debug_backtrace();
-    return ($trace[1]['class']);
+    return get_class_from_filename($trace[1]['file']);
 }
 
 function FriendlyErrorType($type) {
@@ -274,17 +254,26 @@ function _S( $object = null, $shorten = true ) {
         }
         else {
             foreach( $object as $key=>$value ) {
-                if( is_array($value) )
+#                if( is_array($value) )
                     $object[$key] = _S($value);
 
-                if( is_object($value) )
-                    $object[$key] = get_class($value);
+#                if( is_object($value) )
+#                    $object[$key] = get_class($value);
 
-                if( is_string($value) && $shorten && strlen($value) > 15 )
-                    $object[$key] = substr($value, 0, 15) . '...';
+#                if( is_string($value) && $shorten && strlen($value) > 15 )
+#                    $object[$key] = substr($value, 0, 15) . '...';
             }
         }
-        return '('. implode(', ',$object) .')';
+        if( !$shorten ) {
+        	$string = 'Array(' . PHP_EOL;
+        	foreach( $object as $key=>$value) {
+				$string .= " [$key] => " . $value . PHP_EOL;
+        	}
+        	$string .= ')' . PHP_EOL;
+        	return $string;
+        }
+        else
+        	return '('. implode(', ',$object) .')';
     }
 
     if( is_float($object) )

@@ -1,8 +1,8 @@
 <?php
 namespace Mozy\Core;
 
-use Mozy\Core\Test\TestScenario;
-use Mozy\Core\Test\TestException;
+use Mozy\Test\TestScenario;
+use Mozy\Test\TestException;
 
 /**
  * @requires PHP 5.4.9
@@ -37,7 +37,7 @@ class B_SampleTest extends TestScenario {
     }
 
     /**
-     * @expectedException Mozy\Core\Test\TestException
+     * @expectedException Mozy\Test\TestException
      */
     public function testObjectCreation() {
         throw new TestException($this);

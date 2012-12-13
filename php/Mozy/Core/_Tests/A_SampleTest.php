@@ -1,8 +1,8 @@
 <?php
 namespace Mozy\Core;
 
-use Mozy\Core\Test\TestScenario;
-use Mozy\Core\Test\TestException;
+use Mozy\Test\TestScenario;
+use Mozy\Test\TestException;
 
 /**
  * @requires PHP 5.4.9

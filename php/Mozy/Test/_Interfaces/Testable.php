@@ -1,5 +1,5 @@
 <?php
-namespace Mozy\Core\Test;
+namespace Mozy\Test;
 
 interface Testable {
 

@@ -1,6 +1,8 @@
 <?php
 namespace Mozy\Core;
 
+use Mozy\Core\System\ConsoleOutput;
+
 class Exception extends \Exception {
     use Getters;
 
@@ -34,7 +36,7 @@ class Exception extends \Exception {
     }
 
     public function getClass() {
-        return $this->stackTrace->topFrame->object;
+        return $this->stackTrace->topFrame->class;
     }
 
     public function getMethod() {
@@ -43,6 +45,10 @@ class Exception extends \Exception {
 
     public function getArguments() {
         return $this->stackTrace->topFrame->arguments;
+    }
+
+    public function getCaller() {
+    	return $this->stackTrace->topFrame->previous->class;
     }
 
     public function getStackTrace() {
@@ -54,12 +60,32 @@ class Exception extends \Exception {
     }
 
     public function __toString() {
-        return (
-            get_called_class()
-            . ': ' .$this->message
-            . ' by ' . get_class_from_filename($this->file)
-            . ':' .$this->line
-        );
+    	$output = ConsoleOutput::construct();
+    	$snippetSize = 100;
+    	$parser	= SourceParser::construct();
+    	$source = $parser->parse($this->file);
+    	$span = 9;
+    	$min = ($this->line > $span) ? $this->line - $span : 0;
+    	$max = ($this->line < (count($source) - $span)) ? $this->line + $span : count($source);
+
+        $output->line($this->name . ":", 'bold', 'red');
+        $output->line("\t" . $this->line . ' ' . $this->getClass() . ' - ' . $this->message);
+        $output->nl();
+        $output->line("Stack Trace:");
+        $output->line($this->stackTrace);
+        $output->line("Source: " . $this->file);
+        $output->line("\t" . str_repeat("-", $snippetSize+2), 'bold', 'black');
+        $output->line("\t|" . str_repeat(" ", $snippetSize) . "|", 'bold', 'black');
+		for( $i = $min; $i <= $max; $i++ ) {
+			$lineSource = $i . $source[$i];
+			$lineSource = strlen($lineSource) > $snippetSize ? substr($lineSource, 0, $snippetSize-3) . "..." : $lineSource;
+			$padding = strlen($lineSource) < $snippetSize ? $snippetSize - strlen($lineSource) : 0;
+			$output->line("\t|" . $lineSource . str_repeat(" ", $padding)   . "|");
+		}
+		$output->line("\t|" . str_repeat(" ", $snippetSize) . "|", 'bold', 'black');
+		$output->line("\t" . str_repeat("-", $snippetSize+2), 'bold', 'black');
+
+        return (string) $output;
     }
 
     public function copy() {

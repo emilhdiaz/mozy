@@ -1,32 +1,15 @@
 <?php
 namespace Mozy\Core;
 
-use Mozy\Core\Reflection\ReflectionClass;
 use Mozy\Core\System\System;
-
-require_once('common.php');
-require_once('Autoloader.php');
-
-global $framework, $system, $process, $STDIN, $STDOUT, $STDERR;
-
-const Object                = 'Mozy\Core\Object';
-const Immutable             = 'Mozy\Core\Immutable';
-const Singleton             = 'Mozy\Core\Singleton';
-const Factory               = 'Mozy\Core\Factory';
-const TestCase              = 'Mozy\Core\Test\TestCase';
-const TestScenario          = 'Mozy\Core\Test\TestScenario';
-const Assertion             = 'Mozy\Core\Test\Assertion';
-const ReflectionNamespace   = 'Mozy\Core\Reflection\ReflectionNamespace';
-const ReflectionClass       = 'Mozy\Core\Reflection\ReflectionClass';
-const ReflectionMethod      = 'Mozy\Core\Reflection\ReflectionMethod';
-const ReflectionProperty    = 'Mozy\Core\Reflection\ReflectionProperty';
-const ReflectionParameter   = 'Mozy\Core\Reflection\ReflectionParameter';
-const ReflectionComment     = 'Mozy\Core\Reflection\ReflectionComment';
-const InternalCommand       = 'Mozy\Core\System\InternalCommand';
-const ExternalCommand       = 'Mozy\Core\System\ExternalCommand';
 
 define('ROOT', getcwd() . DIRECTORY_SEPARATOR);
 define('NAMESPACE_SEPARATOR', '\\');
+
+require_once(ROOT.'/Mozy/common.php');
+require_once('Autoloader.php');
+
+global $framework, $system, $process, $STDIN, $STDOUT, $STDERR;
 
 spl_autoload_register( ['Mozy\Core\AutoLoader', 'load'], true );
 
@@ -69,13 +52,13 @@ final class Framework extends Object implements Singleton {
         date_default_timezone_set('America/New_York');
 
         // configure Error and Exception Handlers
-        set_error_handler( 'Mozy\Core\errorHandler' );
+#        set_error_handler( 'Mozy\Core\errorHandler' );
         set_exception_handler( 'Mozy\Core\exceptionHandler' );
-        register_shutdown_function('Mozy\Core\fatalErrorHandler');
+#        register_shutdown_function('Mozy\Core\fatalErrorHandler');
         assert_options(ASSERT_WARNING, FALSE);
 
         /* Turn on output buffering */
-        ob_start();
+#        ob_start();
     }
 
     public function processExchange() {
@@ -105,7 +88,7 @@ final class Framework extends Object implements Singleton {
     public function callAPI($api, $action, $arguments, $format = null) {
         $api = 'Mozy\APIs\\'.$api.'API';
 
-        if( !ReflectionClass::exists($api) ) {
+        if( !class_exists($api) ) {
             #TODO throw API level exception
             throw new Exception($api);
         }
@@ -124,10 +107,15 @@ final class Framework extends Object implements Singleton {
             #TODO check argument types
             $value = array_value($arguments, $parameter->name) ?: array_value($arguments, $parameter->position);
 
-            // check if value is required
-            if( !$value && !$parameter->isDefaultValueAvailable() )
-                #TODO throw API level exception
-                throw new Exception($parameter);
+			// check if a default is available
+			if( !$value ) {
+				if( $parameter->isDefaultValueAvailable() )
+					$value = $parameter->defaultValue;
+
+				else
+					#TODO throw API level exception
+                	throw new Exception("Required API argument missing: " . $parameter->name);
+			}
 
             $parameters[$parameter->name] = $value;
         }
@@ -172,9 +160,9 @@ function errorHandler($errno, $errstr, $errfile, $errline, $errcontext) {
 
     #TODO: E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR
     if( $errno & ( E_ERROR ) ) {
-        if( preg_match(ClassNotFoundError::REGEX, $errstr) )
-            exceptionHandler(new ClassNotFoundError($errstr, null, $errfile, $errline));
-
+#        if( preg_match(ClassNotFoundError::REGEX, $errstr) )
+#            exceptionHandler(new ClassNotFoundError($errstr, null, $errfile, $errline));
+#
 #        if( preg_match(Exception::InterfaceNotFoundRegex, $errstr) )
 #            exceptionHandler(new InterfaceNotFoundException($errstr, null, $errfile, $errline));
 #
@@ -240,7 +228,7 @@ function errorHandler($errno, $errstr, $errfile, $errline, $errcontext) {
 #            exceptionHandler(new UndefinedConstantException($errstr, null, $errfile, $errline));
     }
 
-    out("UNHANDLED ERROR: " . FriendlyErrorType($errno) ."- $errstr file $errfile on line $errline");
+    out("UNHANDLED ERROR: " . FriendlyErrorType($errno) ."- $errstr in file $errfile on line $errline");
     die($errno);
 }
 

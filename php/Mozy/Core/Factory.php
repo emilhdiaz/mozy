@@ -4,7 +4,7 @@ namespace Mozy\Core;
 use Mozy\Core\Reflection\ReflectionClass;
 use Mozy\Core\Reflection\ReflectionMethod;
 
-final class Factory {
+final class Factory extends Object {
 
     protected static $objects    = [];
 
@@ -74,7 +74,7 @@ final class Factory {
 
     private static function instantiate( ReflectionClass $class, array $args ) {
         $constructor = $class->constructor;
-        $baseConstructor = ReflectionMethod::construct(namespace\Object, '__construct');
+        $baseConstructor = ReflectionMethod::construct('Mozy\Core\Object', '__construct');
 
         $object = $class->newInstanceWithoutConstructor();
 
@@ -118,7 +118,7 @@ final class Factory {
         if( is_object($object) ) {
 
             // not one of ours so just return
-            if( !( is_a($object, namespace\Object) ) ) {
+            if( !( is_a($object, 'Mozy\Core\Object') ) ) {
                 return $object;
             }
 

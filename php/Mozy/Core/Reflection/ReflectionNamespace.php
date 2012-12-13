@@ -23,7 +23,7 @@ final class ReflectionNamespace implements \Reflector {
     public function getClass( $class ) {
         if( !$namespace = get_namespace( $class ) ) {
             $namespace = $this->name;
-            $class = $namespace . '\\' . $class;
+            $class = $namespace . NAMESPACE_SEPARATOR . $class;
         }
 
         if( $namespace != $this->name )

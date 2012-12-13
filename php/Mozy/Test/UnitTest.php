@@ -1,5 +1,5 @@
 <?php
-namespace Mozy\Core\Test;
+namespace Mozy\Test;
 
 use Mozy\Core\Object;
 use Mozy\Core\Singleton;
@@ -79,14 +79,15 @@ class UnitTest extends Object implements Singleton, Testable {
 
 
             foreach( $directory as $filePath ) {
-                $testScenario = get_class_from_filename($filePath);
+                if( !($testScenario = get_class_from_filename($filePath)) )
+                	continue;
 
                 // filter non Test files
                 if( !preg_match(self::TestScenarioNameRegex, $testScenario) )
                     continue;
 
                 // filter non Test classes
-                if( !is_a($testScenario, \Mozy\Core\TestScenario, true) )
+                if( !is_a($testScenario, 'Mozy\Test\TestScenario', true) )
                     continue;
 
                 $this->addTestScenario( $testScenario::construct($this) );

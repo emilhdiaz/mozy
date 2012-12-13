@@ -2,7 +2,7 @@
 namespace Mozy\APIs;
 
 use Mozy\Core\API;
-use Mozy\Core\Test\UnitTest;
+use Mozy\Test\UnitTest;
 
 class UnitTestAPI extends API {
 

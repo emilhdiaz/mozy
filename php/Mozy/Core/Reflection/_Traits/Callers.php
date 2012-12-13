@@ -12,8 +12,7 @@ trait Callers {
             return call_user_func_array([$this, $getter], $arguments);
         }
 
-        $frame = get_calling_frame();
-        throw new UndefinedMethodException($name, null, $frame->caller, $frame->line);
+        throw new UndefinedMethodException($name);
     }
 }
 ?>

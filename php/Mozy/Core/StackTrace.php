@@ -3,18 +3,35 @@ namespace Mozy\Core;
 
 class StackTrace extends Object {
 
-    protected $stack;
+    protected $frames = [];
     protected $pointer = 0;
 
     protected function __construct( Exception $e = null ) {
-        $this->stack = $e ? $e->trace : debug_backtrace();
+    	if( !$e ) {
+    		$stack = debug_backtrace();
+    		array_shift($stack);
+    	}
+    	else {
+    		$stack = $e->trace;
+    		/* Clean up the top frame file and line info */
+#    		$stack[0]['file'] = $e->file;
+#    		$stack[0]['line'] = $e->line;
+    	}
+    	$stack = array_reverse($stack);
 
-        if( empty($this->stack) )
-            $this->stack[0] = [];
+		$frames = [];
+		$previous = null;
+        foreach($stack as $trace) {
+        	$frame = StackFrame::construct($trace, $previous);
+        	$frames[] = $frame;
+        	$previous = $frame;
+        }
+
+        $this->frames = array_reverse($frames);
     }
 
     public function getCurrentFrame() {
-        return StackFrame::construct($this->stack[$this->pointer]);
+        return $this->frames[$this->pointer];
     }
 
     public function getTopFrame() {
@@ -28,7 +45,7 @@ class StackTrace extends Object {
     }
 
     public function hasNextFrame() {
-        return (bool) ( $this->pointer < (sizeof($this->stack) - 1) );
+        return (bool) ( $this->pointer < (sizeof($this->frames) - 1) );
     }
 
     public function getPreviousFrame() {
@@ -37,9 +54,9 @@ class StackTrace extends Object {
     }
 
     public function __toString() {
-        $str = "    ". $this->currentFrame . PHP_EOL;
+        $str = "\t". $this->currentFrame . PHP_EOL;
         while ($this->hasNextFrame()) {
-            $str .= "    ". $this->nextFrame . PHP_EOL;
+            $str .= "\t". $this->nextFrame . PHP_EOL;
         }
         return $str;
     }

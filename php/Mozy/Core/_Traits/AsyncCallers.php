@@ -15,10 +15,10 @@ trait AsyncCallers {
         /* Delegate to Declared Method */
         if( method_exists($this, $name) ) {
             $method = ReflectionMethod::construct($this, $name);
-            $frame = get_calling_frame();
+            $caller = get_calling_class();
 
-            if( !$method->isAllowedFor($frame->caller) )
-                throw new UnauthorizedMethodAccessException($name, null, $frame->caller, $frame->line);
+            if( !$method->isAllowedFor($caller) )
+                throw new UnauthorizedMethodAccessException($name);
 
             /* Check if there is a callback argument */
             end($arguments);
