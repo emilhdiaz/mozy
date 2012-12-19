@@ -1,8 +1,8 @@
 <?php
 namespace Mozy\Core;
 
-use Mozy\Core\Reflection\ReflectionClass;
-use Mozy\Core\Reflection\ReflectionMethod;
+use Mozy\Core\Reflect\ReflectionClass;
+use Mozy\Core\Reflect\ReflectionMethod;
 
 abstract class Factory extends Object {
 
@@ -83,22 +83,22 @@ abstract class Factory extends Object {
         # The magic #
 
         // always call the Object base constructor
-        $baseConstructor->setAccessible( true );
+        $baseConstructor->setAccessible(true);
         $baseConstructor->invoke($object);
 
         // assign the class reflector
         $classProperty = $class->property('class');
-        $classProperty->setAccessible( true );
+        $classProperty->setAccessible(true);
         $classProperty->setValue( $object, $class );
 
         // assign the uid
         $classProperty = $class->property('uid');
-        $classProperty->setAccessible( true );
+        $classProperty->setAccessible(true);
         $classProperty->setValue( $object, $uid++ );
 
         // if class has it's own constructor defined then call it too
         if ( $constructor != $baseConstructor  ) {
-            $constructor->setAccessible( true );
+            $constructor->setAccessible(true);
             $constructor->invokeArgs( $object, $args );
         }
 
@@ -107,7 +107,7 @@ abstract class Factory extends Object {
 
     private static function assignClass( ReflectionClass $class, Object $object ) {
         $classProperty = $class->property('class');
-        $classProperty->setAccessible( true );
+        $classProperty->setAccessible(true);
         $classProperty->setValue( $object, $class );
     }
 }

@@ -1,4 +1,4 @@
-MOZY=$(HOME)/$(C9_PID)
+MOZY=$(HOME)/$(C9_PID)/php
 TMP=/tmp
 BIN=$(HOME)/bin
 LIB=$(HOME)/lib
@@ -122,4 +122,7 @@ install-ncurses: clean-ncurses
 	make -C $(NCURSES) clean
 	make -C $(NCURSES)
 	make -C $(NCURSES) install
-	ls -s $(NCURSES)/ncurses $(BIN)/ncurses
+	ln -s $(NCURSES)/ncurses $(BIN)/ncurses
+
+install-mozy:
+	ln -s $(MOZY)/mozy.php $(BIN)/mozy

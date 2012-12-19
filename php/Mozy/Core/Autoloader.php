@@ -21,7 +21,8 @@ abstract class Autoloader {
 
         /* Prepare Namespace Path */
         restore_include_path();
-        $namespacePath = get_namespace_path( $resource );
+        $namespace = get_namespace($resource);
+        $namespacePath = get_path_namespace( $namespace );
 
         foreach( static::$namespaceDirectories as $directory ) {
             registerClassPath( $namespacePath . $directory );
@@ -44,8 +45,10 @@ abstract class Autoloader {
 
             /* Looking for an Interface */
             else if ( strpos($fullFilePath, '_Interfaces/') !== false) {
-            	if ( !interface_exists($resource) )
+            	if ( !interface_exists($resource) ) {
+            		var_dump($resource);
             		throw new InterfaceNotFoundError($resource);
+            	}
             }
 
             /* Looking for a Class */
@@ -63,7 +66,7 @@ abstract class Autoloader {
         }
 
         /* At this point the file was not found */
-        throw new FileNotFoundError("File '$filePath' not found");
+        throw new FileNotFoundError("File not found for resource '$resource'");
     }
 
     /**

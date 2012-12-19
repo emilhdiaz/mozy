@@ -2,6 +2,9 @@
 namespace Mozy\Core\System;
 
 use Mozy\Core\Singleton;
+use Mozy\Core\System\IO\StdIn;
+use Mozy\Core\System\IO\StdOut;
+use Mozy\Core\System\IO\StdErr;
 
 class CurrentProcess extends Process implements Singleton {
 

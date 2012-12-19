@@ -1,8 +1,8 @@
 <?php
 namespace Mozy\Core;
 
-use Mozy\Core\Reflection\ReflectionClass;
-use Mozy\Core\Reflection\ReflectionMethod;
+use Mozy\Core\Reflect\ReflectionClass;
+use Mozy\Core\Reflect\ReflectionMethod;
 use Mozy\Core\System\System;
 use Mozy\Core\System\Command;
 

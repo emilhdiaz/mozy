@@ -38,9 +38,9 @@ class ExternalCommand extends Command {
         $command = escapeshellcmd($command);
 
         if( $interactive )
-        	return system( (string) $this );
+        	return system( $command );
         else {
-        	exec( (string) $this, $output );
+        	exec( $command, $output );
         	return implode(' ', $output);
         }
     }

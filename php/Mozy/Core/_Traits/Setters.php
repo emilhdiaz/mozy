@@ -1,7 +1,7 @@
 <?php
 namespace Mozy\Core;
 
-use Mozy\Core\Reflection\ReflectionMethod;
+use Mozy\Core\Reflect\ReflectionMethod;
 
 trait Setters {
     /**

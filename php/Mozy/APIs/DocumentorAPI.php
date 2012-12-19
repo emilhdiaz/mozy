@@ -2,7 +2,7 @@
 namespace Mozy\APIs;
 
 use Mozy\Core\API;
-use Mozy\Doc\Documentor;
+use Mozy\Core\Reflect\Document\Documentor;
 
 class DocumentorAPI extends API {
 
@@ -11,14 +11,14 @@ class DocumentorAPI extends API {
 		return $doc->definition( $resourceName );
 	}
 
-    public function ClassInheritance( $root = 'Mozy\Core\Object' ) {
+    public function classInheritance( $root = 'Mozy\Core\Object' ) {
         global $framework;
         $doc = Documentor::construct();
 		$doc->discoverResources( $framework->class->namespace->name );
 		return $doc->classInheritance( $root );
     }
 
-    public function ExceptionInheritance( $root = 'Mozy\Core\Exception' ) {
+    public function exceptionInheritance( $root = 'Mozy\Core\Exception' ) {
         global $framework;
         $doc = Documentor::construct();
 		$doc->discoverResources( $framework->class->namespace->name );

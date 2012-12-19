@@ -1,8 +1,8 @@
 <?php
 namespace Mozy\Core;
 
-use Mozy\Core\Reflection\ReflectionClass;
-use Mozy\Core\Reflection\ReflectionMethod;
+use Mozy\Core\Reflect\ReflectionClass;
+use Mozy\Core\Reflect\ReflectionMethod;
 
 trait Callers {
     /**
@@ -18,7 +18,7 @@ trait Callers {
                 throw new UnauthorizedMethodAccessException($name);
             }
 
-            $method->setAccessible( true );
+            $method->setAccessible(true);
             return $method->invokeArgs($this, $arguments);
         }
 
@@ -32,7 +32,7 @@ trait Callers {
             if ( !$method->isAllowedFor($caller) )
                 throw new UnauthorizedPropertyAccessException($name);
 
-            $method->setAccessible( true );
+            $method->setAccessible(true);
             return $method->invokeArgs($this, $arguments);
         }
 

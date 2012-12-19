@@ -12,7 +12,7 @@ function println( $string ) {
 }
 
 function debug( $string ) {
-	if( Mozy\Core\DEBUG ) {
+	if( DEBUG ) {
 		global $process;
     	$process->err->writeLine($string);
 	}
@@ -55,7 +55,7 @@ function camelCase($string) {
 }
 
 function get_class_from_filename($fileName) {
-	$className = str_replace(ROOT, '', $fileName);
+	$className = str_replace(MOZY_HOME, '', $fileName);
     $className = str_replace(DIRECTORY_SEPARATOR, NAMESPACE_SEPARATOR, $className);
     $className = substr($className, 0, strrpos($className, '.'));
     $className = trim($className);
@@ -77,13 +77,7 @@ function get_class_from_filename($fileName) {
 
 function get_path_namespace($namespace) {
     $path = str_replace(NAMESPACE_SEPARATOR, DIRECTORY_SEPARATOR, $namespace);
-    $path = ROOT . $path;
-    return $path;
-}
-
-function get_namespace_path($class) {
-    $namespace = get_namespace($class);
-    $path = ROOT . str_replace(NAMESPACE_SEPARATOR, DIRECTORY_SEPARATOR, $namespace);
+    $path = MOZY_HOME . $path;
     return $path;
 }
 

@@ -1,8 +1,8 @@
 <?php
 namespace Mozy\Core;
 
-use Mozy\Test\TestScenario;
-use Mozy\Test\TestException;
+use Mozy\Core\Test\TestScenario;
+use Mozy\Core\Test\TestException;
 
 /**
  * @requires PHP 5.4.9
@@ -11,13 +11,13 @@ class B_SampleTest extends TestScenario {
 
     public $object;
 
-    public function setUp() {
-        parent::setUp();
+    public function setup() {
+        parent::setup();
         $this->fixture->object = new \StdClass;
     }
 
-    public function tearDown() {
-        parent::tearDown();
+    public function cleanup() {
+        parent::cleanup();
         unset($this->fixture->object);
     }
 

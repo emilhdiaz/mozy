@@ -1,8 +1,8 @@
 <?php
 namespace Mozy\Core;
 
-use Mozy\Core\Reflection\ReflectionClass;
-use Mozy\Core\Reflection\ReflectionMethod;
+use Mozy\Core\Reflect\ReflectionClass;
+use Mozy\Core\Reflect\ReflectionMethod;
 
 trait StaticCallers {
     /**
@@ -19,7 +19,7 @@ trait StaticCallers {
             if ( !$method->isAllowedFor($caller) )
                 throw new UnauthorizedMethodAccessException($name);
 
-            $method->setAccessible( true );
+            $method->setAccessible(true);
             return $method->invokeArgs(null, $arguments);
         }
 

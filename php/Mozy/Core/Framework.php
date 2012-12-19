@@ -3,19 +3,6 @@ namespace Mozy\Core;
 
 use Mozy\Core\System\System;
 
-define('ROOT', getcwd() . DIRECTORY_SEPARATOR);
-define('NAMESPACE_SEPARATOR', '\\');
-define('PHP_TAB', "\t");
-
-const DEBUG = false;
-
-require_once(ROOT.'/Mozy/common.php');
-require_once('Autoloader.php');
-
-global $framework, $process, $STDIN, $STDOUT, $STDERR;
-
-spl_autoload_register( ['Mozy\Core\AutoLoader', 'load'], true );
-
 final class Framework extends Object implements Singleton {
 
     private static $self;
@@ -53,7 +40,7 @@ final class Framework extends Object implements Singleton {
         date_default_timezone_set('America/New_York');
 
         // configure Error and Exception Handlers
-#        set_error_handler( 'Mozy\Core\errorHandler' );
+        set_error_handler( 'Mozy\Core\errorHandler' );
 #        set_exception_handler( 'Mozy\Core\exceptionHandler' );
 #        register_shutdown_function('Mozy\Core\fatalErrorHandler');
         assert_options(ASSERT_WARNING, FALSE);
@@ -105,21 +92,6 @@ final class Framework extends Object implements Singleton {
 
     public function getVersion() {
         return _S($this->version);
-    }
-
-    public function getGateway() {
-        return defined('STDIN') ? 'CLI' : 'CGI';
-    }
-
-    public function getEndpoint() {
-        switch( $this->gateway ) {
-            case 'CLI':
-                return $_SERVER['SCRIPT_NAME'];
-                break;
-
-            case 'CGI':
-                break;
-        }
     }
 }
 
@@ -198,14 +170,8 @@ function errorHandler($code, $msg, $file, $line, $errcontext) {
 #            exceptionHandler(new UndefinedConstantException($msg, null, $file, $line));
     }
 
-	$text = "FATAL ERROR: " . FriendlyErrorType($code) ."- $msg in file $file on line $line";
-	exceptionHandler( new \Exception($text) );
-}
-
-function exceptionHandler(\Exception $exception) {
-    global $process;
-    $process->err->writeLine($exception);
-    exit($exception->getCode());
+	$text = "UNHANDLED ERROR: " . FriendlyErrorType($code) ."- $msg in file $file on line $line";
+	throw new \Exception($text);
 }
 
 function fatalErrorHandler() {
@@ -215,7 +181,7 @@ function fatalErrorHandler() {
 		$file = $e['file'];
 		$line = $e['line'];
 		$text = "FATAL ERROR: " . FriendlyErrorType($code) ."- $msg in file $file on line $line";
-		exceptionHandler( new \Exception($text) );
+		throw new \Exception($text);
     }
 }
 ?>

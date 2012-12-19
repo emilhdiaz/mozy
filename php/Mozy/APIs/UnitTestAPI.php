@@ -2,56 +2,50 @@
 namespace Mozy\APIs;
 
 use Mozy\Core\API;
-use Mozy\Test\UnitTest;
+use Mozy\Core\Test\UnitTest;
 
 class UnitTestAPI extends API {
 
-    private function runUnitTest( $unitTest, $stopOnFailure = false, $reportMode = false ) {
-        $report = $unitTest->run();
-
-        if ($reportMode) {
-            $report->setMode($reportMode);
-        }
-
-        return $report;
-    }
-
-    public function testAll( $stopOnFailure = false, $separateProcess = false, $reportMode = false ) {
+    public function testAll( $stopOnFailure = false ) {
         global $framework;
-        $unitTest = UnitTest::construct($stopOnFailure, $separateProcess);
+        $unitTest = UnitTest::construct($stopOnFailure);
         $unitTest->discoverTests($framework->class->namespace->name);
-        $report = $this->runUnitTest($unitTest, $stopOnFailure, $reportMode);
-        return $report;
+        $unitTest->run();
+        return $unitTest;
     }
 
-    public function testNamespace( $namespace, $stopOnFailure = false, $separateProcess = false, $reportMode = false ) {
-        $unitTest = UnitTest::construct($stopOnFailure, $separateProcess);
+    public function testNamespace( $namespace, $stopOnFailure = false ) {
+        $unitTest = UnitTest::construct($stopOnFailure);
         $unitTest->discoverTests($namespace);
-        return $this->runUnitTest($unitTest, $stopOnFailure, $reportMode);
+        $unitTest->run();
+        return $unitTest;
     }
 
-    public function testNamespaces( array $namespaces, $stopOnFailure = false, $separateProcess = false, $reportMode = false ) {
-        $unitTest = UnitTest::construct($stopOnFailure, $separateProcess);
+    public function testNamespaces( array $namespaces, $stopOnFailure = false ) {
+        $unitTest = UnitTest::construct($stopOnFailure);
         foreach($namespaces as $namespace) {
             $unitTest->discoverTests($namespace);
         }
-        return $this->runUnitTest($unitTest, $stopOnFailure, $reportMode);
+        $unitTest->run();
+        return $unitTest;
     }
 
-    public function testScenario( $scenario, $stopOnFailure = false, $separateProcess = false, $reportMode = false ) {
-        $unitTest = UnitTest::construct($stopOnFailure, $separateProcess);
+    public function testScenario( $scenario, $stopOnFailure = false ) {
+        $unitTest = UnitTest::construct($stopOnFailure);
         $testScenario = $scenario::construct($unitTest);
         $unitTest->addTestScenario($testScenario);
-        return $this->runUnitTest($unitTest, $stopOnFailure, $reportMode);
+        $unitTest->run();
+        return $unitTest;
     }
 
-    public function testScenarios( array $scenarios, $stopOnFailure = false, $separateProcess = false, $reportMode = false ) {
-        $unitTest = UnitTest::construct($stopOnFailure, $separateProcess);
+    public function testScenarios( array $scenarios, $stopOnFailure = false ) {
+        $unitTest = UnitTest::construct($stopOnFailure);
         foreach($scenarios as $scenario) {
             $testScenario = $scenario::construct($unitTest);
             $unitTest->addTestScenario($testScenario);
         }
-        return $this->runUnitTest($unitTest, $stopOnFailure, $reportMode);
+        $unitTest->run();
+        return $unitTest;
     }
 }
 ?>

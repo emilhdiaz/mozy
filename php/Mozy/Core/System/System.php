@@ -3,6 +3,7 @@ namespace Mozy\Core\System;
 
 use Mozy\Core\Object;
 use Mozy\Core\Singleton;
+use Mozy\Core\System\IO\Pipe;
 
 class System extends Object implements Singleton {
 
