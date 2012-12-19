@@ -102,13 +102,13 @@ class ReflectionClass extends \ReflectionClass implements Documented {
 
     public function validate() {
         /* Singleton Implementation Check */
-        if( $this->isSingleton() && $this->constructor->isPublic() ) {
+        if ( $this->isSingleton() && $this->constructor->isPublic() ) {
             throw new SingletonImplementationException($this->name);
         }
     }
 
     public function extend($extension) {
-        if( class_exists($extension, false) )
+        if ( class_exists($extension, false) )
             throw new \Exception('Cannot redeclare class $extension as extention of ' . $this->name);
 
         create_new_class($extension, $this->name);

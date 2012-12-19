@@ -21,15 +21,15 @@ final class ReflectionNamespace implements \Reflector {
     }
 
     public function getClass( $class ) {
-        if( !$namespace = get_namespace( $class ) ) {
+        if ( !$namespace = get_namespace( $class ) ) {
             $namespace = $this->name;
             $class = $namespace . NAMESPACE_SEPARATOR . $class;
         }
 
-        if( $namespace != $this->name )
+        if ( $namespace != $this->name )
             throw new \Exception("Class $class is not from this namespace");
 
-        if( !class_exists( $class ) )
+        if ( !class_exists( $class ) )
             throw new \Exception("Class $class does not exist");
 
         return ReflectionClass::construct($class);

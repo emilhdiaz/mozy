@@ -7,15 +7,12 @@ class StackTrace extends Object {
     protected $pointer = 0;
 
     protected function __construct( Exception $e = null ) {
-    	if( !$e ) {
+    	if ( !$e ) {
     		$stack = debug_backtrace();
     		array_shift($stack);
     	}
     	else {
     		$stack = $e->trace;
-    		/* Clean up the top frame file and line info */
-#    		$stack[0]['file'] = $e->file;
-#    		$stack[0]['line'] = $e->line;
     	}
     	$stack = array_reverse($stack);
 
@@ -27,7 +24,8 @@ class StackTrace extends Object {
         	$previous = $frame;
         }
 
-        $this->frames = array_reverse($frames);
+		$this->frames = $frames;
+#        $this->frames = array_reverse($frames);
     }
 
     public function getCurrentFrame() {
@@ -51,14 +49,6 @@ class StackTrace extends Object {
     public function getPreviousFrame() {
         $this->pointer--;
         return $this->currentFrame;
-    }
-
-    public function __toString() {
-        $str = "\t". $this->currentFrame . PHP_EOL;
-        while ($this->hasNextFrame()) {
-            $str .= "\t". $this->nextFrame . PHP_EOL;
-        }
-        return $str;
     }
 }
 ?>

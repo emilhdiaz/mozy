@@ -17,7 +17,7 @@ class Tree extends Object {
 
 	public function addNode( $element ) {
 		/* Check if element was already processed */
-		if( array_key_exists($element->name, $this->treeNodes) )
+		if ( array_key_exists($element->name, $this->treeNodes) )
 			return $this->treeNodes[$element->name];
 
 		/* Create the node */
@@ -25,23 +25,14 @@ class Tree extends Object {
 		$this->treeNodes[$element->name] = $node;
 
 		/* Child Node */
-		if( $parentElement = $element->getParentClass() )
+		if ( $parentElement = $element->getParentClass() )
 			$node->parent = $this->addNode($parentElement);
 
 		/* Top Node */
-		elseif( $element->name != $this->topNode->element->name )
+		elseif ( $element->name != $this->topNode->element->name )
 			$this->orphanNodes[] = $node;
 
 		return $node;
-	}
-
-	public function __toString() {
-		$string = _S($this->topNode);
-		$string .= "Siblings:" . PHP_EOL;
-		foreach( $this->orphanNodes as $orphan ) {
-			$string .= _S($orphan);
-		}
-		return $string;
 	}
 }
 ?>

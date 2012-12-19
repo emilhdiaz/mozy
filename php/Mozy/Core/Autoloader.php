@@ -3,6 +3,8 @@ namespace Mozy\Core;
 
 abstract class Autoloader {
 
+	public $uid = 0;
+
     protected static $extensions = ['.php'];
 
     protected static $namespaceDirectories = [
@@ -31,28 +33,29 @@ abstract class Autoloader {
         $fullFilePath = stream_resolve_include_path( $filePath );
 
         /* Check if resource exists with the current extension */
-        if( $fullFilePath ) {
+        if ( $fullFilePath ) {
             include_once($fullFilePath);
 
 			/* Looking for a Trait */
-            if( strpos($fullFilePath, '_Traits/') !== false) {
-            	if( !trait_exists($resource) )
-            		throw new TraitNotFoundError();
+            if ( strpos($fullFilePath, '_Traits/') !== false) {
+            	if ( !trait_exists($resource) )
+            		throw new TraitNotFoundError($resource);
             }
 
             /* Looking for an Interface */
-            else if( strpos($fullFilePath, '_Interfaces/') !== false) {
-            	if( !interface_exists($resource) )
-            		throw new InterfaceNotFoundError();
+            else if ( strpos($fullFilePath, '_Interfaces/') !== false) {
+            	if ( !interface_exists($resource) )
+            		throw new InterfaceNotFoundError($resource);
             }
 
             /* Looking for a Class */
             else  {
-				if( !class_exists($resource) )
-					throw new ClassNotFoundError();
+				if ( !class_exists($resource) ) {
+					throw new ClassNotFoundError($resource);
+				}
 
             	/* Bootstrap Class */
-            	if( method_exists($resource, 'bootstrap') ) {
+            	if ( method_exists($resource, 'bootstrap') ) {
                 	$resource::bootstrap();
             	}
 			}
@@ -68,7 +71,7 @@ abstract class Autoloader {
      * Return array of registered file extensions.
      */
     public static function extensions(array $extensions = null) {
-        if( $extensions ) {
+        if ( $extensions ) {
             static::$extensions = array_unique($extensions);
         }
         return static::$extensions;
@@ -78,7 +81,7 @@ abstract class Autoloader {
      *  Register a single file extension.
      */
     public static function registerExtension($extension) {
-        if( !in_array($extension, static::$extensions) ) {
+        if ( !in_array($extension, static::$extensions) ) {
             static::$extensions[] = $extension;
         }
     }
@@ -87,7 +90,7 @@ abstract class Autoloader {
      * Unregister a single file extension.
      */
     public static function unregisterExtension($extension) {
-        if( ($key = array_search($del_val, $messages)) !== false) {
+        if ( ($key = array_search($del_val, $messages)) !== false) {
             unset($messages[$key]);
         }
     }

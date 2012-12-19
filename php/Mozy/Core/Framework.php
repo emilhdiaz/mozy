@@ -5,11 +5,14 @@ use Mozy\Core\System\System;
 
 define('ROOT', getcwd() . DIRECTORY_SEPARATOR);
 define('NAMESPACE_SEPARATOR', '\\');
+define('PHP_TAB', "\t");
+
+const DEBUG = false;
 
 require_once(ROOT.'/Mozy/common.php');
 require_once('Autoloader.php');
 
-global $framework, $system, $process, $STDIN, $STDOUT, $STDERR;
+global $framework, $process, $STDIN, $STDOUT, $STDERR;
 
 spl_autoload_register( ['Mozy\Core\AutoLoader', 'load'], true );
 
@@ -18,7 +21,6 @@ final class Framework extends Object implements Singleton {
     private static $self;
     protected $version = 1.0;
     protected $currentRequest;
-    protected $overrideFormat;
 
     public static function init() {
         global $framework, $system, $process;
@@ -26,12 +28,11 @@ final class Framework extends Object implements Singleton {
         // bootstrap the PHP environment
         self::bootstrap();
 
+		// initialize the system and the current process
+        $process = System::construct()->process;
+
         // initialize the framework
         $framework = self::construct();
-
-        $system = System::construct();
-
-        $process = $system->process;
     }
 
     public static function bootstrap() {
@@ -53,49 +54,22 @@ final class Framework extends Object implements Singleton {
 
         // configure Error and Exception Handlers
 #        set_error_handler( 'Mozy\Core\errorHandler' );
-        set_exception_handler( 'Mozy\Core\exceptionHandler' );
+#        set_exception_handler( 'Mozy\Core\exceptionHandler' );
 #        register_shutdown_function('Mozy\Core\fatalErrorHandler');
         assert_options(ASSERT_WARNING, FALSE);
-
-        /* Turn on output buffering */
-#        ob_start();
     }
 
-    public function processExchange() {
-        global $process;
-
-        // determine the exchange request type
-        switch( $this->gateway ) {
-            case 'CLI':
-                $this->currentRequest = ConsoleRequest::construct();
-                break;
-
-            case 'CGI':
-                break;
-        }
-
-        try {
-            $result = $this->callAPI($this->currentRequest->api, $this->currentRequest->action, $this->currentRequest->arguments, $this->currentRequest->format);
-        }
-        catch(\Exception $e) {
-            throw $e;
-        }
-
-        /* Send the result */
-        $process->out->writeLine($result);
-    }
-
-    public function callAPI($api, $action, $arguments, $format = null) {
+    public function callAPI($api, $action, $arguments) {
         $api = 'Mozy\APIs\\'.$api.'API';
 
-        if( !class_exists($api) ) {
+        if ( !class_exists($api) ) {
             #TODO throw API level exception
             throw new Exception($api);
         }
 
         $api = $api::construct();
 
-        if( !$api->class->hasMethod($action) ) {
+        if ( !$api->class->hasMethod($action) ) {
             #TODO throw API level exception
             throw new Exception($action);
         }
@@ -108,8 +82,8 @@ final class Framework extends Object implements Singleton {
             $value = array_value($arguments, $parameter->name) ?: array_value($arguments, $parameter->position);
 
 			// check if a default is available
-			if( !$value ) {
-				if( $parameter->isDefaultValueAvailable() )
+			if ( !$value ) {
+				if ( $parameter->isDefaultValueAvailable() )
 					$value = $parameter->defaultValue;
 
 				else
@@ -147,114 +121,101 @@ final class Framework extends Object implements Singleton {
                 break;
         }
     }
-
-    public function setOverrideFormat( $format ) {
-        $this->overrideFormat = (string) $format;
-    }
 }
 
-function errorHandler($errno, $errstr, $errfile, $errline, $errcontext) {
+function errorHandler($code, $msg, $file, $line, $errcontext) {
     global $process;
-#    if( preg_match('/^Missing argument 1 for Mozy\\\Core\\\Object::__construct.*/', $errstr) )
+#    if ( preg_match('/^Missing argument 1 for Mozy\\\Core\\\Object::__construct.*/', $msg) )
 #        return;
 
     #TODO: E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR
-    if( $errno & ( E_ERROR ) ) {
-#        if( preg_match(ClassNotFoundError::REGEX, $errstr) )
-#            exceptionHandler(new ClassNotFoundError($errstr, null, $errfile, $errline));
+    if ( $code & ( E_ERROR ) ) {
+#        if ( preg_match(ClassNotFoundError::REGEX, $msg) )
+#            exceptionHandler(new ClassNotFoundError($msg, null, $file, $line));
 #
-#        if( preg_match(Exception::InterfaceNotFoundRegex, $errstr) )
-#            exceptionHandler(new InterfaceNotFoundException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::InterfaceNotFoundRegex, $msg) )
+#            exceptionHandler(new InterfaceNotFoundException($msg, null, $file, $line));
 #
-#        if( preg_match(Exception::TraitNotFoundRegex, $errstr) )
-#            exceptionHandler(new TraitNotFoundException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::TraitNotFoundRegex, $msg) )
+#            exceptionHandler(new TraitNotFoundException($msg, null, $file, $line));
 #
-#        if( preg_match(Exception::AbstractDefinitionRegex, $errstr) )
-#            exceptionHandler(new AbstractDefinitionException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::AbstractDefinitionRegex, $msg) )
+#            exceptionHandler(new AbstractDefinitionException($msg, null, $file, $line));
 #
-#        if( preg_match(Exception::MissingImplementationRegex, $errstr) )
-#            exceptionHandler(new MissingImplementationException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::MissingImplementationRegex, $msg) )
+#            exceptionHandler(new MissingImplementationException($msg, null, $file, $line));
 #
-#        if( preg_match(Exception::UndefinedMethodRegex, $errstr) )
-#            exceptionHandler(new UndefinedMethodException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::UndefinedMethodRegex, $msg) )
+#            exceptionHandler(new UndefinedMethodException($msg, null, $file, $line));
 #
-#        if( preg_match(Exception::UnauthorizedMethodAccessRegex, $errstr) )
-#            exceptionHandler(new UnauthorizedMethodAccessException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::UnauthorizedMethodAccessRegex, $msg) )
+#            exceptionHandler(new UnauthorizedMethodAccessException($msg, null, $file, $line));
 #
-#        if( preg_match(Exception::UnauthorizedPropertyAccessRegex, $errstr) )
-#            exceptionHandler(new UnauthorizedPropertyAccessException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::UnauthorizedPropertyAccessRegex, $msg) )
+#            exceptionHandler(new UnauthorizedPropertyAccessException($msg, null, $file, $line));
 #
-#        if( preg_match(Exception::MissingArgumentRegex, $errstr) )
-#            exceptionHandler(new MissingArgumentException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::MissingArgumentRegex, $msg) )
+#            exceptionHandler(new MissingArgumentException($msg, null, $file, $line));
 #
-#        if( preg_match(Exception::InvalidArgumentTypeRegex, $errstr) )
-#            exceptionHandler(new InvalidArgumentTypeException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::InvalidArgumentTypeRegex, $msg) )
+#            exceptionHandler(new InvalidArgumentTypeException($msg, null, $file, $line));
 #
-#        if( preg_match(Exception::UndefinedConstantRegex, $errstr) )
-#            exceptionHandler(new UndefinedConstantException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::UndefinedConstantRegex, $msg) )
+#            exceptionHandler(new UndefinedConstantException($msg, null, $file, $line));
 #
-#        if( preg_match(Exception::InvalidConstructionRegex, $errstr) )
-#            exceptionHandler(new InvalidConstructionException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::InvalidConstructionRegex, $msg) )
+#            exceptionHandler(new InvalidConstructionException($msg, null, $file, $line));
 #
-#        if ( preg_match(Exception::NullDereference2Regex, $errstr) )
-#            exceptionHandler(new NullReferenceException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::NullDereference2Regex, $msg) )
+#            exceptionHandler(new NullReferenceException($msg, null, $file, $line));
     }
 
-    if( $errno & ( E_WARNING | E_COMPILE_WARNING | E_USER_WARNING | E_DEPRECATED | E_USER_DEPRECATED ) ) {
-#        if( preg_match(Exception::DivisionByZeroRegex, $errstr) )
-#            exceptionHandler(new DivisionByZeroException($errstr, null, $errfile, $errline));
+    if ( $code & ( E_WARNING | E_COMPILE_WARNING | E_USER_WARNING | E_DEPRECATED | E_USER_DEPRECATED ) ) {
+#        if ( preg_match(Exception::DivisionByZeroRegex, $msg) )
+#            exceptionHandler(new DivisionByZeroException($msg, null, $file, $line));
 #
-#        if( preg_match(Exception::MissingArgument2Regex, $errstr) )
-#            exceptionHandler(new MissingArgumentException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::MissingArgument2Regex, $msg) )
+#            exceptionHandler(new MissingArgumentException($msg, null, $file, $line));
     }
 
-    if( $errno & ( E_NOTICE | E_USER_NOTICE | E_STRICT ) ) {
-#        if( preg_match(Exception::InvalidArrayKeyRegex, $errstr) )
-#            exceptionHandler(new InvalidArrayKeyException($errstr, null, $errfile, $errline));
+    if ( $code & ( E_NOTICE | E_USER_NOTICE | E_STRICT ) ) {
+#        if ( preg_match(Exception::InvalidArrayKeyRegex, $msg) )
+#            exceptionHandler(new InvalidArrayKeyException($msg, null, $file, $line));
 #
-#        if( preg_match(Exception::InvalidStringOffsetRegex, $errstr) )
-#            exceptionHandler(new InvalidStringOffsetException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::InvalidStringOffsetRegex, $msg) )
+#            exceptionHandler(new InvalidStringOffsetException($msg, null, $file, $line));
 #
-#        if ( preg_match(Exception::NullReferenceRegex, $errstr) )
-#            exceptionHandler(new NullReferenceException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::NullReferenceRegex, $msg) )
+#            exceptionHandler(new NullReferenceException($msg, null, $file, $line));
 #
-#        if ( preg_match(Exception::NullDereferenceRegex, $errstr) )
-#            exceptionHandler(new NullReferenceException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::NullDereferenceRegex, $msg) )
+#            exceptionHandler(new NullReferenceException($msg, null, $file, $line));
 #
-#        if( preg_match(Exception::UndefinedPropertyRegex, $errstr) )
-#            exceptionHandler(new UndefinedPropertyException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::UndefinedPropertyRegex, $msg) )
+#            exceptionHandler(new UndefinedPropertyException($msg, null, $file, $line));
 #
-#        if( preg_match(Exception::UndefinedConstantRegex, $errstr) )
-#            exceptionHandler(new UndefinedConstantException($errstr, null, $errfile, $errline));
+#        if ( preg_match(Exception::UndefinedConstantRegex, $msg) )
+#            exceptionHandler(new UndefinedConstantException($msg, null, $file, $line));
     }
 
-    out("UNHANDLED ERROR: " . FriendlyErrorType($errno) ."- $errstr in file $errfile on line $errline");
-    die($errno);
+	$text = "FATAL ERROR: " . FriendlyErrorType($code) ."- $msg in file $file on line $line";
+	exceptionHandler( new \Exception($text) );
 }
 
 function exceptionHandler(\Exception $exception) {
-
-    fwrite( fopen('exceptions.log', 'w+'), (string) $exception );
-
-    out($exception);
+    global $process;
+    $process->err->writeLine($exception);
     exit($exception->getCode());
 }
 
 function fatalErrorHandler() {
-    try {
-        # Getting last error
-        $e = error_get_last();
-        if( $e ) {
-            ob_clean();
-            $code = $e['type'];
-            $msg  = $e['message'];
-            $file = $e['file'];
-            $line = $e['line'];
-            errorHandler($code,$msg,$file,$line,null);
-        }
-    }
-    catch( Exception $e ) {
-        exceptionHandler($e);
+	if ( $e = error_get_last() ) {
+		$code = $e['type'];
+		$msg  = $e['message'];
+		$file = $e['file'];
+		$line = $e['line'];
+		$text = "FATAL ERROR: " . FriendlyErrorType($code) ."- $msg in file $file on line $line";
+		exceptionHandler( new \Exception($text) );
     }
 }
 ?>

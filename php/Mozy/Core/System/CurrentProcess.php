@@ -1,9 +1,7 @@
 <?php
 namespace Mozy\Core\System;
 
-use Mozy\Core\Object;
 use Mozy\Core\Singleton;
-use Mozy\Core\Command;
 
 class CurrentProcess extends Process implements Singleton {
 
@@ -140,27 +138,10 @@ class CurrentProcess extends Process implements Singleton {
 
     /**
      * End process execution normally.
-     * Wait for children to finish normally and process their responses.
-     * Close any communication streams to the children.
-     */
-    public function quit() {
-        if( is_resource($this->lock) )
-            fclose($this->lock);
-
-        $this->waitForChildren();
-
-        exit(0);
-    }
-
-    /**
-     * End process execution normally.
      * Do not wait for children and do not process their responses.
      * Close any communication streams to the children.
      */
     public function close() {
-        if( is_resource($this->lock) )
-            fclose($this->lock);
-
         $this->abandonChildren();
 
         exit(0);
@@ -172,13 +153,9 @@ class CurrentProcess extends Process implements Singleton {
      * Close any communication streams to the children.
      */
     public function terminate() {
-        if( is_resource($this->lock) )
-            fclose($this->lock);
-
         $this->terminateChildren();
 
         throw new \Exception("Process PID(". $this->id .") terminated\n");
-        exit(0);
     }
 
     /**
@@ -187,9 +164,6 @@ class CurrentProcess extends Process implements Singleton {
      * Close any communication streams to the children.
      */
     public function kill() {
-        if( is_resource($this->lock) )
-            fclose($this->lock);
-
         $this->killChildren();
 
         throw new \Exception("Process PID(". $this->id .") killed");
@@ -251,11 +225,11 @@ class CurrentProcess extends Process implements Singleton {
     public function processResponses() {
         $pid = pcntl_wait( $status, WNOHANG);
         while( $pid > 0 ) {
-            if( !array_key_exists($pid, $this->children) ) {
-#                echo "Child PID($pid) was already removed from child list. \n";
+            if ( !array_key_exists($pid, $this->children) ) {
+                debug("Child PID($pid) was already removed from child list. \n");
             }
             else {
-#                echo "Child PID($pid) was processed and removed from child list. \n";
+                debug("Child PID($pid) was processed and removed from child list. \n");
                 $this->children[$pid]->processResponse();
                 unset($this->children[$pid]);
             }
@@ -263,13 +237,6 @@ class CurrentProcess extends Process implements Singleton {
             /*check for more dead children in this signal */
             $pid = pcntl_wait( $status, WNOHANG);
         }
-    }
-
-    /**
-     * Executes a blocking command in interactive mode
-     */
-    public function executeInteractive( ExternalCommand $command ) {
-        system( (string) $command );
     }
 
     /**
@@ -355,12 +322,12 @@ class CurrentProcess extends Process implements Singleton {
     public function fork( Command $childBranch, \Closure $localCallback = null, InternalCommand $parentBranch = null, $openPipes = true ) {
         $in;
         $out;
-        if( count($this->children) >= self::$maxChildren ) {
+        if ( count($this->children) >= self::$maxChildren ) {
             throw new \Exception("Reached max limit (" . self::$maxChildren . ") of children");
         }
 
         /* Create non-blocking pipes */
-        if( $openPipes ) {
+        if ( $openPipes ) {
             $in  = $this->system->createIO(true);
             $out = $this->system->createIO(true);
         }
@@ -383,12 +350,12 @@ class CurrentProcess extends Process implements Singleton {
             /* Change the process title */
             $this->title = 'Mozy Process ' . $this->id;
 
-#            print("New child process PID(". $this->id .") created. \n");
+            debug("New child process PID(". $this->id .") created. \n");
 
             #TODO: need to reinstall signal handlers to allow children to have childran
 
             /* Execute internal child branch */
-            if( $childBranch->class->name == 'Mozy\Core\InternalCommand' ) {
+            if ( $childBranch->class->name == 'Mozy\Core\InternalCommand' ) {
                 $this->in = $in;
                 $this->out = $out;
                 $this->err = $out;
@@ -401,13 +368,13 @@ class CurrentProcess extends Process implements Singleton {
             }
 
             /* Execute external child branch */
-            if( $childBranch->class->name == 'Mozy\Core\ExternalCommand' ) {
+            if ( $childBranch->class->name == 'Mozy\Core\ExternalCommand' ) {
                 /* Redirect standard files  */
                 fclose(STDIN);
                 fclose(STDOUT);
                 fclose(STDERR);
 
-                if( $openPipes ) {
+                if ( $openPipes ) {
                     global $STDIN, $STDOUT, $STDERR;
                     $STDIN  = fopen($in->path, 'r+');
                     $STDOUT = fopen($out->path, 'r+');
@@ -427,7 +394,7 @@ class CurrentProcess extends Process implements Singleton {
 
             $this->children[$process->id] = $process;
 
-            if( $parentBranch ) {
+            if ( $parentBranch ) {
                 /* Execute parent branch */
                 $parentBranch();
 
@@ -444,7 +411,10 @@ class CurrentProcess extends Process implements Singleton {
     }
 
     public function __destruct() {
-        $this->quit();
+        if ( is_resource($this->lock) )
+            fclose($this->lock);
+
+        $this->waitForChildren();
     }
 }
 ?>

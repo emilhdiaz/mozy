@@ -1,15 +1,12 @@
 #!/usr/bin/env php
 <?php
 use Mozy\Core\Framework;
-use Mozy\Core\SourceParser;
+use Mozy\Core\CLI\Console;
 
 require_once('Mozy/Core/Framework.php');
 Framework::init();
 
-#require_once('php_error/php_error.php');
-#php_error\reportErrors();
+$console = Console::construct();
 
-#Unknown::construct(1, 2);
-
-$framework->processExchange();
+$console->start();
 ?>

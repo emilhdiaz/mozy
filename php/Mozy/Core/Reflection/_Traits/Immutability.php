@@ -10,7 +10,7 @@ trait Immutability {
         $key = implode('::', $args);
 
         // created the reflector that was asked for
-        if( !array_key_exists($key, self::$instances) )
+        if ( !array_key_exists($key, self::$instances) )
             self::$instances[$key] = self::$reflector->newInstanceArgs($args);
 
         return self::$instances[$key];

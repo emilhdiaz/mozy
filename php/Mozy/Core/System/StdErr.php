@@ -18,18 +18,8 @@ class StdErr extends Object implements IO, Singleton {
         $this->open();
     }
 
-    public function setPath( $path ) {
-        if( !file_exists($path) ) {
-            throw new \Exception('File description path is invalid.');
-        }
-
-        $this->path = $path;
-        $this->resource = null;
-        $this->open();
-    }
-
     public function open() {
-        if( $this->isOpen() )
+        if ( $this->isOpen() )
             return;
 
         $this->resource   = fopen($this->path, 'r+');
@@ -61,7 +51,7 @@ class StdErr extends Object implements IO, Singleton {
     }
 
     public function close() {
-        if( $this->isOpen() ) {
+        if ( $this->isOpen() ) {
             fclose($this->resource);
         }
         return $this;

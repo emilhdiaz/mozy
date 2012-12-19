@@ -9,7 +9,7 @@ class UnitTestAPI extends API {
     private function runUnitTest( $unitTest, $stopOnFailure = false, $reportMode = false ) {
         $report = $unitTest->run();
 
-        if($reportMode) {
+        if ($reportMode) {
             $report->setMode($reportMode);
         }
 

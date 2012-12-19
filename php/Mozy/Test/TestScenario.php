@@ -30,11 +30,11 @@ abstract class TestScenario extends Object implements Singleton, Testable {
         $class = ReflectionClass::construct('Mozy\Test\TestCase');
         foreach( $this->class->methods(ReflectionMethod::IS_PUBLIC) as $test ) {
             // filter non test methods
-            if( !preg_match(self::TestCaseNameRegex, $test->name) )
+            if ( !preg_match(self::TestCaseNameRegex, $test->name) )
                 continue;
 
             // filter static methods
-            if( $test->isStatic() )
+            if ( $test->isStatic() )
                 continue;
 
             // create a new TestCase subclass
@@ -44,10 +44,6 @@ abstract class TestScenario extends Object implements Singleton, Testable {
 
             $this->testCases[$testCase->shortName] = $testCase;
         }
-    }
-
-    public function __toString() {
-        return $this->name;
     }
 
     public function setUp() {
@@ -66,7 +62,7 @@ abstract class TestScenario extends Object implements Singleton, Testable {
         // check for runtime requirements
         $dependencyManager = $framework->dependencyManager;
         foreach( $this->requires as $requirement=>$value ) {
-            if( !$dependencyManager->isDependencyLoaded($requirement, $value) ) {
+            if ( !$dependencyManager->isDependencyLoaded($requirement, $value) ) {
                 $this->message = 'Runtime dependency on ' . $requirement . ' ' . $value . ' failed.';
                 $this->result = SKIPPED;
                 return;
@@ -75,24 +71,24 @@ abstract class TestScenario extends Object implements Singleton, Testable {
 
         foreach($this->testCases as $testCase) {
             // check for already executed tests
-            if( $testCase->result != PENDING )
+            if ( $testCase->result != PENDING )
                 continue;
 
             $this->runTestCase($testCase->shortName);
 
             // check if scenario has failed
-            if( ($testCase->result == FAILED) && ($this->unitTest->stopOnFailure) ) {
+            if ( ($testCase->result == FAILED) && ($this->unitTest->stopOnFailure) ) {
                 $this->message = 'Test case ' . $testCase->name . ' failed.';
                 $this->result = FAILED;
                 return;
             }
         }
 
-        if( count($this->failed) > 0 ) {
+        if ( count($this->failed) > 0 ) {
             $this->message = count($this->failed) . ' test case(s) failed.';
             $this->result = FAILED;
         }
-        elseif( count($this->passed) > 0 ) {
+        elseif ( count($this->passed) > 0 ) {
             $this->message = count($this->passed) . ' test case(s) passed.';
             $this->result = PASSED;
         }
@@ -108,7 +104,7 @@ abstract class TestScenario extends Object implements Singleton, Testable {
         $testCase = $this->testCases[$name];
 
         // check if test already ran
-        if( $testCase->result != PENDING )
+        if ( $testCase->result != PENDING )
             return $testCase->result;
 
         // set up before test
@@ -130,7 +126,7 @@ abstract class TestScenario extends Object implements Singleton, Testable {
     public function getPassed() {
         $array = [];
         array_walk($this->testCases, function($testCase, $key) use (&$array) {
-            if($testCase->result == PASSED) $array[] = $testCase;
+            if ($testCase->result == PASSED) $array[] = $testCase;
         });
         return $array;
     }
@@ -138,7 +134,7 @@ abstract class TestScenario extends Object implements Singleton, Testable {
     public function getFailed() {
         $array = [];
         array_walk($this->testCases, function($testCase, $key) use (&$array) {
-            if($testCase->result == FAILED) $array[] = $testCase;
+            if ($testCase->result == FAILED) $array[] = $testCase;
         });
         return $array;
     }
@@ -146,7 +142,7 @@ abstract class TestScenario extends Object implements Singleton, Testable {
     public function getSkipped() {
         $array = [];
         array_walk($this->testCases, function($testCase, $key) use (&$array) {
-            if($testCase->result == SKIPPED) $array[] = $testCase;
+            if ($testCase->result == SKIPPED) $array[] = $testCase;
         });
         return $array;
     }
@@ -154,7 +150,7 @@ abstract class TestScenario extends Object implements Singleton, Testable {
     public function getIncomplete() {
         $array = [];
         array_walk($this->testCases, function($testCase, $key) use (&$array) {
-            if($testCase->result == INCOMPLETE) $array[] = $testCase;
+            if ($testCase->result == INCOMPLETE) $array[] = $testCase;
         });
         return $array;
     }

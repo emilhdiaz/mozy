@@ -12,23 +12,27 @@ trait Getters {
         $class = get_called_class();
 
         /* Indirect Getter Access */
-        if( method_exists($class, $getter) ) {
+        if ( method_exists($class, $getter) ) {
             $method = ReflectionMethod::construct($class, $getter);
             $caller = get_calling_class();
 
             // check accessibility
-            if( !$method->isAllowedFor($caller) )
+            if ( !$method->isAllowedFor($caller) )
                 throw new UnauthorizedPropertyAccessException($name);
 
             return $this->$getter();
         }
 
         /* Default (public read access) */
-        if( !property_exists($class, $name) ) {
+        if ( !property_exists($class, $name) ) {
             throw new UndefinedPropertyException($name);
         }
 
         return $this->$name;
+    }
+
+    public function __isset( $name ) {
+    	return isset($this->$name);
     }
 }
 ?>

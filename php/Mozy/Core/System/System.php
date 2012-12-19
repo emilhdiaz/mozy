@@ -12,7 +12,6 @@ class System extends Object implements Singleton {
     protected $release;
     protected $architecture;
     protected $hostname;
-    protected $console;
     protected $process;
     protected $loginName;
 
@@ -23,7 +22,6 @@ class System extends Object implements Singleton {
         $this->release      = $i['release'];
         $this->architecture = $i['machine'];
         $this->hostname     = $i['nodename'];
-        $this->console      = Console::construct();
         $this->process      = CurrentProcess::construct($this);
         $this->loginName    = posix_getlogin();
     }

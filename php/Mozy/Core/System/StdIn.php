@@ -11,29 +11,18 @@ class StdIn extends Object implements IO, Singleton {
     protected $blocking;
     protected $resource;
 
-    protected function __construct( $blocking = false ) {
+    protected function __construct( $blocking = true ) {
         $this->path     = 'php://stdin';
         $this->mode     = 0600;
-        $this->blocking = (bool) $blocking;
         $this->open();
-    }
-
-    public function setPath( $path ) {
-        if( !file_exists($path) ) {
-            throw new \Exception('File description path is invalid.');
-        }
-
-        $this->path = $path;
-        $this->resource = null;
-        $this->open();
+        $this->setBlocking($blocking);
     }
 
     public function open() {
-        if( $this->isOpen() )
+        if ( $this->isOpen() )
             return;
 
-        $this->resource = fopen($this->path, 'r+');
-        stream_set_blocking($this->resource, $this->blocking);
+        $this->resource = fopen($this->path, 'r');
         return $this;
     }
 
@@ -45,10 +34,22 @@ class StdIn extends Object implements IO, Singleton {
         throw new \Exception("Cannot write to StdIn");
     }
 
+    public function read() {
+    	$data = trim(stream_get_contents($this->resource));
+
+    	debug("Read (" . strlen($data) . " bytes): $data");
+        return $data;
+    }
+
+   	public function readChar() {
+   		$data = fgetc($this->resource);
+   		return $data;
+   	}
+
     public function readLine() {
         $data = trim(fgets($this->resource));
 
-        debug("Read (" . strlen($data) . " bytes): $data");
+		debug("Read (" . strlen($data) . " bytes): $data");
         return $data;
     }
 
@@ -58,7 +59,7 @@ class StdIn extends Object implements IO, Singleton {
     }
 
     public function close() {
-        if( $this->isOpen() ) {
+        if ( $this->isOpen() ) {
             fclose($this->resource);
         }
         return $this;

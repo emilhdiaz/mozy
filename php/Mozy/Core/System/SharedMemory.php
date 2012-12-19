@@ -27,12 +27,12 @@ class SharedMemory extends Object implements IO {
     }
 
     public function open() {
-        if( $this->isOpen() )
+        if ( $this->isOpen() )
             return;
 
         $this->resource = shm_attach( $this->path, $this->size, $this->mode );
 
-        if( !$this->resource ) {
+        if ( !$this->resource ) {
             throw new \Exception("Unable to create Shared Memory segment");
         }
 
@@ -46,7 +46,7 @@ class SharedMemory extends Object implements IO {
     }
 
     public function write( $data ) {
-        $data = convert($data);
+        $data = _S($data);
         shm_put_var( $this->resource, 1, $data);
         $bytes = strlen($data);
 
@@ -56,7 +56,7 @@ class SharedMemory extends Object implements IO {
     public function readLine() {
         $data = trim(shm_get_var( $this->resource, 1));
 
-        if( $this->blocking ) {
+        if ( $this->blocking ) {
             while( strlen($data) <= 0 ) {
                 usleep(10000);
                 $data = trim(shm_get_var( $this->resource, 1));
@@ -74,7 +74,7 @@ class SharedMemory extends Object implements IO {
     }
 
     public function close() {
-        if( $this->isOpen() ) {
+        if ( $this->isOpen() ) {
             shm_detach( $this->resource );
         }
         return $this;

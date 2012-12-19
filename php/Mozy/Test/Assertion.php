@@ -22,7 +22,7 @@ class Assertion extends Object {
 
     public static function assertTrue($condition) {
         $result = (bool) assert($condition);
-        $condition = (string) _S($condition) . ' is ' . 'TRUE';
+        $condition = (string) _S($condition) . ' is true';
         return Assertion::construct('AssertTrue', $condition, $result);
     }
 
@@ -45,14 +45,16 @@ class Assertion extends Object {
     }
 
     public static function assertOutput($expectedOutput) {
-        $output = ob_get_clean();
+    	global $process;
+        $output = $process->output->contents;
         $result = (bool) ($expectedOutput == $output);
         $condition = (string) "Expected output '" . $expectedOutput . "', received '" . $output ."'";
         return Assertion::construct('AssertOutput', $condition, $result);
     }
 
     public static function assertNoOutput() {
-        $output = ob_get_clean();
+        global $process;
+        $output = $process->output->contents;
         $result = (bool) !$output;
         $condition = (string) "No output expected, received '" . $output ."'";
         return Assertion::construct('AssertNoOutput', $condition, $result);

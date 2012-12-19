@@ -30,7 +30,7 @@ final class ReflectionParameter extends \ReflectionParameter {
         $class = parent::getClass();
 
         // check annotations
-        if( !$class ) {
+        if ( !$class ) {
             $comment = $this->declaringMethod->docComment;
             preg_match('/@var\s+'.$this->name.'\s+(\S+)[\r\n]/', $comment, $matches);
             $className = count($matches) > 0 ? $matches[1] : null;
@@ -39,7 +39,7 @@ final class ReflectionParameter extends \ReflectionParameter {
             $className = $class->name;
         }
 
-        if( !ReflectionClass::exists($className) )
+        if ( !ReflectionClass::exists($className) )
             return;
 
         return ReflectionClass::construct($className);

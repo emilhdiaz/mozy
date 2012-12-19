@@ -2,7 +2,6 @@
 namespace Mozy\Core\System;
 
 use Mozy\Core\Object;
-use Mozy\Core\Command;
 
 class Process extends Object {
 
@@ -76,7 +75,7 @@ class Process extends Object {
     public function processResponse() {
         /* Process response */
         #TODO: process response
-        if( $this->callback ) {
+        if ( $this->callback ) {
             $response = $this->out->readLine();
             $response = unserialize($response);
             $this->callback->__invoke( $response );
@@ -100,7 +99,7 @@ class Process extends Object {
 #     * Waits for the process to exit (blocking)
 #     */
 #    public function wait() {
-#        if( $this->isRunning() ) {
+#        if ( $this->isRunning() ) {
 #            $pid = pcntl_waitpid( $this->id, $this->status );
 #        }
 #    }
@@ -109,7 +108,7 @@ class Process extends Object {
 #     * Checks if process has exited (non-blocking)
 #     */
 #    public function check() {
-#        if( $this->isRunning() ) {
+#        if ( $this->isRunning() ) {
 #            pcntl_waitpid( $this->id, $this->status, WNOHANG );
 #        }
 #        return $this->isRunning();
@@ -119,7 +118,7 @@ class Process extends Object {
      * Closes the process (blocking) and communication streams.
      */
     public function terminate() {
-        if( $this->isRunning() ) {
+        if ( $this->isRunning() ) {
             posix_kill( $this->id, SIGTERM );
             pcntl_waitpid( $this->id, $this->status );
         }
@@ -130,7 +129,7 @@ class Process extends Object {
      * Kills the process (non-blocking) and communication streams.
      */
     public function kill() {
-        if( $this->isRunning() ) {
+        if ( $this->isRunning() ) {
             posix_kill( $this->id, SIGKILL );
             pcntl_waitpid( $this->id, $this->status, WNOHANG );
         }
@@ -138,14 +137,14 @@ class Process extends Object {
     }
 
     public function exitedNormal() {
-        if( pcntl_wifexited( $this->status ) )
+        if ( pcntl_wifexited( $this->status ) )
             return pcntl_wexitstatus( $this->status );
 
         return false;
     }
 
     public function exitedWithSignal() {
-        if( pcntl_wifsignaled( $this->status ) )
+        if ( pcntl_wifsignaled( $this->status ) )
             return pcntl_wtermsig( $this->status );
 
         return false;

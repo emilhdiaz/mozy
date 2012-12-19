@@ -1,10 +1,7 @@
 <?php
 namespace Mozy\Core\System;
 
-use Mozy\Core\Object;
-use Mozy\Core\Command;
-
-class ExternalCommand extends Object implements Command {
+class ExternalCommand extends Command {
 
     protected $command;
     protected $arguments;
@@ -16,30 +13,36 @@ class ExternalCommand extends Object implements Command {
         $this->options      = _A($options);
     }
 
-    public function __toString() {
+    /**
+     * Executes a blocking command.
+     * Flags for interactive mode
+     */
+    public function __invoke( $interactive = false ) {
         $command = $this->command . ' ';
 
         // escape arguments
         foreach($this->arguments as $argument) {
-            if( !$argument ) continue;
+            if ( !$argument ) continue;
 
             $command .= escapeshellarg($argument) . ' ';
         }
 
         // escape options
         foreach($this->options as $option => $value) {
-            if( !$option ) continue;
+            if ( !$option ) continue;
 
             $command .= escapeshellarg( '--' . $option . ' ' . $value) . ' ';
         }
 
         // clean command
-        return escapeshellcmd($command);
-    }
+        $command = escapeshellcmd($command);
 
-    public function __invoke() {
-        exec( (string) $this, $output );
-        return implode(' ', $output);
+        if( $interactive )
+        	return system( (string) $this );
+        else {
+        	exec( (string) $this, $output );
+        	return implode(' ', $output);
+        }
     }
 }
 ?>

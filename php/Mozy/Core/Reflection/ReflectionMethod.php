@@ -56,23 +56,23 @@ final class ReflectionMethod extends \ReflectionMethod implements Documented {
         $declaringClass = $this->declaringClass;
 
         // allow if public
-        if( $this->isPublic() )
+        if ( $this->isPublic() )
             return true;
 
         // allow the declaring class
-        if( $this->isDeclaringClass($class) )
+        if ( $this->isDeclaringClass($class) )
             return true;
 
         // allow if all classes are allowed
-        if( in_array('all', $this->allow) )
+        if ( in_array('all', $this->allow) )
             return true;
 
         // allow if in list of allowed classes
-        if( in_array($class, $this->allow) )
+        if ( in_array($class, $this->allow) )
             return true;
 
         // allow subclasses if protected
-        if( $this->isProtected() && ($declaringClass->isAncestorOf($class)) )
+        if ( $this->isProtected() && ($declaringClass->isAncestorOf($class)) )
             return true;
 
         return false;

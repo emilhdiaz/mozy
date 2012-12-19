@@ -49,14 +49,6 @@ class UnitTest extends Object implements Singleton, Testable {
         $this->report = TestReport::construct($this);
     }
 
-    public function __toString() {
-        return $this->name;
-    }
-
-    public function __revive(UnitTest $unitTest) {
-
-    }
-
     public function addTestScenario(TestScenario $testScenario) {
         $this->testScenarios[$testScenario->class->name] = $testScenario;
 
@@ -79,15 +71,15 @@ class UnitTest extends Object implements Singleton, Testable {
 
 
             foreach( $directory as $filePath ) {
-                if( !($testScenario = get_class_from_filename($filePath)) )
+                if ( !($testScenario = get_class_from_filename($filePath)) )
                 	continue;
 
                 // filter non Test files
-                if( !preg_match(self::TestScenarioNameRegex, $testScenario) )
+                if ( !preg_match(self::TestScenarioNameRegex, $testScenario) )
                     continue;
 
                 // filter non Test classes
-                if( !is_a($testScenario, 'Mozy\Test\TestScenario', true) )
+                if ( !is_a($testScenario, 'Mozy\Test\TestScenario', true) )
                     continue;
 
                 $this->addTestScenario( $testScenario::construct($this) );
@@ -106,17 +98,17 @@ class UnitTest extends Object implements Singleton, Testable {
             $testScenario->run();
 
             // check if scenario has failed
-            if( ($testScenario->result == FAILED) && ($this->stopOnFailure) ) {
+            if ( ($testScenario->result == FAILED) && ($this->stopOnFailure) ) {
                 $this->result = FAILED;
                 return;
             }
         }
 
-        if( count($this->failed) > 0 ) {
+        if ( count($this->failed) > 0 ) {
             $this->message = count($this->failed) . ' test scenario(s) failed.';
             $this->result = FAILED;
         }
-        elseif( count($this->passed) > 0 ) {
+        elseif ( count($this->passed) > 0 ) {
             $this->message = count($this->passed) . ' test scenario(s) passed.';
             $this->result = PASSED;
         }
@@ -132,8 +124,8 @@ class UnitTest extends Object implements Singleton, Testable {
         return $this->defaultNamespace = $namespace;
     }
 
-    public function setStopOnFailure($bool) {
-        return $this->stopOnFailure = (bool) $stopOnFailure;
+    public function setStopOnFailure($flag) {
+        return $this->stopOnFailure = (bool) $flag;
     }
 
     public function setFilterGroups(array $groups) {
@@ -167,7 +159,7 @@ class UnitTest extends Object implements Singleton, Testable {
     public function getPassed() {
         $array = [];
         array_walk($this->testScenarios, function($testScenario, $key) use (&$array) {
-            if($testScenario->result == PASSED) $array[] = $testScenario;
+            if ($testScenario->result == PASSED) $array[] = $testScenario;
         });
         return $array;
     }
@@ -175,7 +167,7 @@ class UnitTest extends Object implements Singleton, Testable {
     public function getFailed() {
         $array = [];
         array_walk($this->testScenarios, function($testScenario, $key) use (&$array) {
-            if($testScenario->result == FAILED) $array[] = $testScenario;
+            if ($testScenario->result == FAILED) $array[] = $testScenario;
         });
         return $array;
     }
@@ -183,7 +175,7 @@ class UnitTest extends Object implements Singleton, Testable {
     public function getSkipped() {
         $array = [];
         array_walk($this->testScenarios, function($testScenario, $key) use (&$array) {
-            if($testScenario->result == SKIPPED) $array[] = $testScenario;
+            if ($testScenario->result == SKIPPED) $array[] = $testScenario;
         });
         return $array;
     }
@@ -191,7 +183,7 @@ class UnitTest extends Object implements Singleton, Testable {
     public function getIncomplete() {
         $array = [];
         array_walk($this->testScenarios, function($testScenario, $key) use (&$array) {
-            if($testScenario->result == INCOMPLETE) $array[] = $testScenario;
+            if ($testScenario->result == INCOMPLETE) $array[] = $testScenario;
         });
         return $array;
     }

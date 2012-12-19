@@ -25,14 +25,14 @@ class Pipe extends Object implements IO {
     }
 
     public function open() {
-        if( $this->isOpen() )
+        if ( $this->isOpen() )
             return;
 
-        if( file_exists($this->path) ) {
+        if ( file_exists($this->path) ) {
             throw new \Exception('Pipe already exists');
         }
 
-        if( !posix_mkfifo($this->path, $this->mode) ) {
+        if ( !posix_mkfifo($this->path, $this->mode) ) {
             throw new \Exception('Unable to create Pipe');
         }
 
@@ -46,7 +46,7 @@ class Pipe extends Object implements IO {
     }
 
     public function write( $data ) {
-        $data = convert($data);
+        $data = _S($data);
         $bytes = fwrite($this->resource, $data);
 
         debug("Wrote ($bytes bytes): $data");
@@ -70,7 +70,7 @@ class Pipe extends Object implements IO {
     }
 
     public function close() {
-        if( $this->isOpen() ) {
+        if ( $this->isOpen() ) {
             fclose($this->resource);
         }
         return $this;

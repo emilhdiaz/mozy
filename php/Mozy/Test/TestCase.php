@@ -35,15 +35,11 @@ abstract class TestCase extends Object implements Singleton, Testable {
         $this->expectedException = $comment->annotation('expectedException');
         $this->expectedOutput    = $comment->annotation('expectedOutput');
 
-        if( $this->provider ) {
+        if ( $this->provider ) {
             $this->variations = $testScenario->{$this->provider}() ?: [];
         } else {
             $this->variations[] = [];
         }
-    }
-
-    public function __toString() {
-        return $this->name;
     }
 
     public function run() {
@@ -52,7 +48,7 @@ abstract class TestCase extends Object implements Singleton, Testable {
         // check for runtime requirements
         $dependencyManager = $framework->dependencyManager;
         foreach( $this->requires as $requirement=>$value ) {
-            if( !$dependencyManager->isDependencyLoaded($requirement, $value) ) {
+            if ( !$dependencyManager->isDependencyLoaded($requirement, $value) ) {
                 $this->message = 'Runtime dependency on ' . $requirement . ' ' . $value . ' failed.';
                 $this->result = SKIPPED;
                 return;
@@ -63,7 +59,7 @@ abstract class TestCase extends Object implements Singleton, Testable {
         foreach($this->dependsOn as $dependency) {
             $result = $this->testScenario->runTestCase($dependency);
 
-            if( $result != PASSED ) {
+            if ( $result != PASSED ) {
                 $this->message = 'Dependent test case ' . $dependency . ' did not pass.';
                 $this->result = SKIPPED;
                 return;
@@ -78,14 +74,14 @@ abstract class TestCase extends Object implements Singleton, Testable {
             $test->run();
 
             // check if test case has failed
-            if( ($test->result == FAILED) && ($this->testScenario->unitTest->stopOnFailure) ) {
+            if ( ($test->result == FAILED) && ($this->testScenario->unitTest->stopOnFailure) ) {
                 $this->message = 'Test variation ' . $test->name . ' failed.';
                 $this->result = FAILED;
                 return;
             }
 
             // check for incomplete tests
-            if( $test->result == PENDING ) {
+            if ( $test->result == PENDING ) {
                 // ignore the last run
                 array_pop($this->tests);
 
@@ -97,11 +93,11 @@ abstract class TestCase extends Object implements Singleton, Testable {
         System::construct()->process->waitForChildren();
 
         // check results
-        if( count($this->failed) > 0 ) {
+        if ( count($this->failed) > 0 ) {
             $this->message = count($this->failed) . ' test(s) failed.';
             $this->result = FAILED;
         }
-        elseif( count($this->passed) > 0 ) {
+        elseif ( count($this->passed) > 0 ) {
             $this->message = count($this->passed) . ' test(s) passed.';
             $this->result = PASSED;
         }
@@ -126,7 +122,7 @@ abstract class TestCase extends Object implements Singleton, Testable {
     public function getPassed() {
         $array = [];
         array_walk($this->tests, function($test, $key) use (&$array) {
-            if($test->result == PASSED) $array[] = $test;
+            if ($test->result == PASSED) $array[] = $test;
         });
         return $array;
     }
@@ -134,7 +130,7 @@ abstract class TestCase extends Object implements Singleton, Testable {
     public function getFailed() {
         $array = [];
         array_walk($this->tests, function($test, $key) use (&$array) {
-            if($test->result == FAILED) $array[] = $test;
+            if ($test->result == FAILED) $array[] = $test;
         });
         return $array;
     }

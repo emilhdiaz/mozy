@@ -6,6 +6,7 @@ PHP=$(LIB)/php
 EXT=$(PHP)/ext
 ICU=$(LIB)/icu
 DOC=$(LIB)/phpDocumentor
+NCURSES=$(LIB)/ncurses
 PEAR=$(HOME)/pear
 LD_LIBRARY_PATH=$(ICU)/usr/local/bin
 
@@ -109,3 +110,16 @@ install-icu: clean-icu
 	ln -s $(ICU)/usr/local/bin/makeconv $(BIN)/makeconv
 	ln -s $(ICU)/usr/local/bin/pkdata $(BIN)/pkdata
 	ln -s $(ICU)/usr/local/bin/uconv $(BIN)/uconv
+
+clean-ncurses:
+	rm -rf $(NCURSES)
+	rm -f $(BIN)/ncurses
+
+install-ncurses: clean-ncurses
+	cd $(TMP); wget ftp://ftp.gnu.org/pub/gnu/ncurses/ncurses-5.9.tar.gz -O "ncurses.tar.gz"
+	cd $(LIB); tar xzf $(TMP)/ncurses.tar.gz; mv ncurses-5.9 $(NCURSES)
+	cd $(NCURSES); ./configure --prefix=$(NCURSES)
+	make -C $(NCURSES) clean
+	make -C $(NCURSES)
+	make -C $(NCURSES) install
+	ls -s $(NCURSES)/ncurses $(BIN)/ncurses

@@ -1,8 +1,6 @@
 <?php
 namespace Mozy\Core;
 
-use Mozy\Core\System\ConsoleOutput;
-
 class Exception extends \Exception {
     use Getters;
 
@@ -35,6 +33,10 @@ class Exception extends \Exception {
         }
     }
 
+	public function getShortFile() {
+		return substr($this->file, strrpos($this->file, DIRECTORY_SEPARATOR));
+	}
+
     public function getClass() {
         return $this->stackTrace->topFrame->class;
     }
@@ -60,32 +62,7 @@ class Exception extends \Exception {
     }
 
     public function __toString() {
-    	$output = ConsoleOutput::construct();
-    	$snippetSize = 100;
-    	$parser	= SourceParser::construct();
-    	$source = $parser->parse($this->file);
-    	$span = 9;
-    	$min = ($this->line > $span) ? $this->line - $span : 0;
-    	$max = ($this->line < (count($source) - $span)) ? $this->line + $span : count($source);
-
-        $output->line($this->name . ":", 'bold', 'red');
-        $output->line("\t" . $this->line . ' ' . $this->getClass() . ' - ' . $this->message);
-        $output->nl();
-        $output->line("Stack Trace:");
-        $output->line($this->stackTrace);
-        $output->line("Source: " . $this->file);
-        $output->line("\t" . str_repeat("-", $snippetSize+2), 'bold', 'black');
-        $output->line("\t|" . str_repeat(" ", $snippetSize) . "|", 'bold', 'black');
-		for( $i = $min; $i <= $max; $i++ ) {
-			$lineSource = $i . $source[$i];
-			$lineSource = strlen($lineSource) > $snippetSize ? substr($lineSource, 0, $snippetSize-3) . "..." : $lineSource;
-			$padding = strlen($lineSource) < $snippetSize ? $snippetSize - strlen($lineSource) : 0;
-			$output->line("\t|" . $lineSource . str_repeat(" ", $padding)   . "|");
-		}
-		$output->line("\t|" . str_repeat(" ", $snippetSize) . "|", 'bold', 'black');
-		$output->line("\t" . str_repeat("-", $snippetSize+2), 'bold', 'black');
-
-        return (string) $output;
+    	return $this->name;
     }
 
     public function copy() {

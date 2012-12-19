@@ -11,7 +11,6 @@ class SourceParser extends Object implements Singleton, Parser {
 			$contents = @file_get_contents( $sourceFile );
 
 			/* Clean up new lines */
-#			preg_replace('/(\r\n)|(\n\r)|\r/', PHP_EOL, $contents);
 			$contents = str_replace("\r\n", PHP_EOL, $contents);
 			$contents = str_replace("\n\r", PHP_EOL, $contents);
 			$contents = str_replace("\r", PHP_EOL, $contents);

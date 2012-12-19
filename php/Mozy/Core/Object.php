@@ -13,6 +13,7 @@ abstract class Object {
     use Callers;
     use StaticCallers;
 
+	protected $uid;
     protected $class;
 
     private function __construct() {}
@@ -25,7 +26,7 @@ abstract class Object {
 
         $properties = array_keys(get_class_vars(get_called_class()));
         foreach($properties as $property) {
-            if( $property == 'class' )
+            if ( $property == 'class' )
                 continue;
 
             $serial[] = $property;
@@ -34,7 +35,7 @@ abstract class Object {
     }
 
     public function __toString() {
-        return $this->class->name . '('.spl_object_hash($this).')';
+        return $this->class->name . ":" . $this->uid;
     }
 }
 ?>

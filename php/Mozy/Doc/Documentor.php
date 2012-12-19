@@ -18,21 +18,24 @@ class Documentor extends Object implements Singleton {
 	protected $resources	= [];
 
 	public function addResource( $resourceName ) {
-		if( !array_key_exists($resourceName, $this->resources) ) {
+		if ( !array_key_exists($resourceName, $this->resources) ) {
 
 			$resource = ReflectionClass::construct( $resourceName );
 
+			if( strpos($resourceName, 'Test') !== false )
+				println($resourceName);
+
 			/* Classify the resource */
-			if( $resource->isInterface() )
+			if ( $resource->isInterface() )
 				$this->interfaces[$resourceName] = $resource;
 
-			else if( $resource->isTrait() )
+			else if ( $resource->isTrait() )
 				$this->traits[$resourceName] = $resource;
 
-			else if( $resource->isException() )
+			else if ( $resource->isException() )
 				$this->exceptions[$resourceName] = $resource;
 
-			else if( $resource->isReflector() )
+			else if ( $resource->isReflector() )
 				$this->reflectors[$resourceName] = $resource;
 
 			else
@@ -50,10 +53,11 @@ class Documentor extends Object implements Singleton {
             $directory = new RecursiveIteratorIterator($directory);
 
             foreach( $directory as $filePath ) {
-                if( !($resource = get_class_from_filename($filePath)) )
-                	continue;
+                if ( !($resource = get_class_from_filename($filePath)) ) {
+   	            	continue;
+                }
 
-                if( $resource )
+                if ( $resource )
                 	$this->addResource( $resource );
             }
         } catch (\UnexpectedValueException $e) {

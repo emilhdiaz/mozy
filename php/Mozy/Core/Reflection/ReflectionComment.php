@@ -16,7 +16,7 @@ final class ReflectionComment implements \Reflector {
         $this->comment = $reflector->docComment;
         $this->annotations = [];
 
-        if( empty($this->comment) )
+        if ( empty($this->comment) )
             return;
 
         // parse description
@@ -29,13 +29,13 @@ final class ReflectionComment implements \Reflector {
         preg_match_all('/@(\S+)\s*(.*)[\r\n]/', $this->comment, $matches);
         foreach($matches[1] as $key=>$name) {
             // check for parameter @var definitions
-            if( $name == 'var' )
+            if ( $name == 'var' )
                 continue;
 
             $value = [];
             foreach(explode(',', trim($matches[2][$key])) as $pair) {
                 // check for no qualifier after annotation name
-                if( !$pair ) continue;
+                if ( !$pair ) continue;
 
                 // $pair expected to be 'Text' or  'Text Text'
                 $pair = explode(' ', trim($pair));
@@ -45,11 +45,11 @@ final class ReflectionComment implements \Reflector {
             }
 
             // correct for single qualifier
-            if( (count($value) == 1) && (reset($value) == key($value)) )
+            if ( (count($value) == 1) && (reset($value) == key($value)) )
                 $value = current($value);
 
             // correct for no qualifier
-            if( count($value) == 0 )
+            if ( count($value) == 0 )
                 $value = true;
 
             $this->annotations[$name] = $value;
@@ -61,7 +61,7 @@ final class ReflectionComment implements \Reflector {
     }
 
     public function getAnnotation($annotation) {
-        if( !$this->hasAnnotation($annotation) )
+        if ( !$this->hasAnnotation($annotation) )
             return null;
 
         return $this->annotations[$annotation];

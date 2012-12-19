@@ -18,28 +18,12 @@ class TreeNode extends Object {
 	}
 
 	public function setParent( TreeNode $parent ) {
-#		out("Setting ".$parent->name." as parent of ".$this->name);
 		$this->parent = $parent;
 		$parent->addChild($this);
 	}
 
 	public function addChild( TreeNode $child ) {
 		$this->children[$child->name] = $child;
-	}
-
-	public function __toString() {
-		static $hit = 0;
-		$hit++;
-		$delim = str_repeat("\t", $hit) . '-> ';
-
-		$string = $this->name . PHP_EOL;
-		ksort($this->children, SORT_NATURAL);
-		foreach( $this->children as $child ) {
-			$string .= $delim . $child;
-		}
-
-		$hit--;
-		return $string;
 	}
 }
 ?>
