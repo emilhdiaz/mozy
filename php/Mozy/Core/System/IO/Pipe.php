@@ -2,6 +2,7 @@
 namespace Mozy\Core\System\IO;
 
 use Mozy\Core\Object;
+use Mozy\Core\System\System;
 
 class Pipe extends Object implements IO {
 
@@ -11,7 +12,7 @@ class Pipe extends Object implements IO {
     protected $resource;
 
     /**
-     * @allow System
+     * @allow Mozy\Core\System\System
      */
     private static function construct( $key, $blocking = false, $mode = 0600 ) {
         return parent::_construct_( $key, $blocking, $mode );
@@ -49,7 +50,7 @@ class Pipe extends Object implements IO {
         $data = _S($data);
         $bytes = fwrite($this->resource, $data);
 
-        debug("Wrote ($bytes bytes): $data");
+        debug("Wrote ($bytes bytes)");
     }
 
     public function writeLine( $data ) {
@@ -59,8 +60,10 @@ class Pipe extends Object implements IO {
 
     public function readLine() {
         $data = trim(fgets($this->resource));
+        $bytes = strlen($data);
 
-        debug("Read (" . strlen($data) . " bytes): $data");
+        debug("Read ($bytes bytes)");
+
         return $data;
     }
 

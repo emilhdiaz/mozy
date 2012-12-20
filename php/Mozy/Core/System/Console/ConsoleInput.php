@@ -66,7 +66,7 @@ class ConsoleInput extends Object implements Singleton {
 							break;
 
 						default:
-							println('Unhandled control sequence:' .$crt);
+							debug('Unhandled control sequence:' .$crt);
 					}
 					$in->blocking = true;
 					break;

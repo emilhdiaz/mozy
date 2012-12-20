@@ -39,21 +39,20 @@ abstract class Autoloader {
 
 			/* Looking for a Trait */
             if ( strpos($fullFilePath, '_Traits/') !== false) {
-            	if ( !trait_exists($resource) )
+            	if ( !trait_exists($resource, false) )
             		throw new TraitNotFoundError($resource);
             }
 
             /* Looking for an Interface */
             else if ( strpos($fullFilePath, '_Interfaces/') !== false) {
-            	if ( !interface_exists($resource) ) {
-            		var_dump($resource);
+            	if ( !interface_exists($resource, false) ) {
             		throw new InterfaceNotFoundError($resource);
             	}
             }
 
             /* Looking for a Class */
             else  {
-				if ( !class_exists($resource) ) {
+				if ( !class_exists($resource, false) ) {
 					throw new ClassNotFoundError($resource);
 				}
 

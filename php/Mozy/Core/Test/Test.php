@@ -72,6 +72,7 @@ class Test extends Object implements Testable {
         catch( TestFailureException $e ) {
             $this->result = FAILED;
             $this->failure = $e;
+			$process->out->clean()->end();
             return;
         }
         // enter alternate exception processing
@@ -100,6 +101,7 @@ class Test extends Object implements Testable {
             catch( TestFailureException $e ) {
                 $this->result = FAILED;
                 $this->failure = $e;
+                $process->out->clean()->end();
                 return;
             }
         }

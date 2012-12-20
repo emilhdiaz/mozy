@@ -11,6 +11,7 @@ class ReflectionClass extends \ReflectionClass implements Documented {
     protected $namespace;
 
     public function __construct($name) {
+    	class_exists($name);
         parent::__construct($name);
         $this->namespace = get_namespace($name);
     }
@@ -114,10 +115,5 @@ class ReflectionClass extends \ReflectionClass implements Documented {
         create_new_class($extension, $this->name);
         return $extension;
     }
-
-    public static function exists( $name ) {
-        return class_exists( $name );
-    }
-
 }
 ?>

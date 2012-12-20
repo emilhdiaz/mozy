@@ -12,7 +12,7 @@ function println( $string ) {
 }
 
 function debug( $string ) {
-	if( DEBUG ) {
+	if( Mozy\Core\System\Console\Console::$debug ) {
 		global $process;
     	$process->err->writeLine($string);
 	}
@@ -27,15 +27,9 @@ function create_new_class($class, $base = null) {
     $class = preg_replace("/[^A-Za-z0-9_\\\]/","", $class);
     $base = preg_replace("/[^A-Za-z0-9_\\\]/","", $base);
 
-    // isolate namespace
-    $namespace = substr($class, 0, strrpos($class, NAMESPACE_SEPARATOR));
-
-    // remove leading namespace
+    // isolate class name parts
+    $namespace = get_namespace($class);
     $class = str_replace($namespace . NAMESPACE_SEPARATOR, '', $class);
-    $base = str_replace($namespace . NAMESPACE_SEPARATOR, '', $base);
-
-    // convert remaining namespace to underscore
-    $class = str_replace(NAMESPACE_SEPARATOR, '_', $class);
 
     $definition =
         "namespace " . $namespace . ";" . PHP_EOL .
@@ -214,7 +208,7 @@ function _S( $object = null ) {
         return $object;
 
     elseif ( is_object($object) ) {
-		return (string) $object;
+		return (string) get_class($object);
     }
 
     elseif ( is_resource($object) )

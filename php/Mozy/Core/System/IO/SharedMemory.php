@@ -12,7 +12,7 @@ class SharedMemory extends Object implements IO {
     protected $size;
 
     /**
-     * @allow System
+     * @allow Mozy\Core\System\System
      */
     private static function construct( $key, $size = null, $blocking = false, $mode = 0600 ) {
         return parent::_construct_( $key, $size, $blocking, $mode );
@@ -48,9 +48,6 @@ class SharedMemory extends Object implements IO {
     public function write( $data ) {
         $data = _S($data);
         shm_put_var( $this->resource, 1, $data);
-        $bytes = strlen($data);
-
-        debug("Wrote ($bytes bytes): $data");
     }
 
     public function readLine() {
@@ -64,8 +61,6 @@ class SharedMemory extends Object implements IO {
         }
 
         shm_put_var( $this->resource, 1, null );
-
-        debug("Read (" . strlen($data) . " bytes): $data");
         return $data;
     }
 

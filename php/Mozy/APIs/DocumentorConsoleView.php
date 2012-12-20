@@ -20,6 +20,8 @@ class DocumentorConsoleView extends ConsoleView {
 
     	$output = $this->console->output;
     	$output->enableSourceHighlighting();
+
+    	$process->out->flush()->end();
     }
 
     public function classInheritance( Tree $tree ) {

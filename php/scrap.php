@@ -1,5 +1,6 @@
 <?php
 use Mozy\Core\Object;
+use Mozy\Core\Type\DateTime;
 use Mozy\Core\AsyncCallers;
 use Mozy\Core\System\System;
 use Mozy\Core\System\Command;
@@ -30,21 +31,21 @@ class Test extends Object {
 
 $system = System::construct();
 $me = $system->process;
-#$me->out->writeLine( "Starting parent process with PID(".$me->id.")" );
+$me->out->writeLine( "Starting parent process with PID(".$me->id.")" );
 
 $test = Test::construct();
 
 // synchronous call with return value
-debug("Synchronous call says I am " . $test->calculateAge(new DateTime('8/12/1987')) . " year(s) old.");
+println("Synchronous call says I am " . $test->calculateAge(new DateTime('8/12/1987')) . " year(s) old.");
 
 // synchronous call with callback
 $test->calculateAge(new DateTime('8/12/1987'), function($age) {
-    debug("Synchronous callback says I am " . $age . " year(s) old.");
+    println("Synchronous callback says I am " . $age . " year(s) old.");
 });
 
 // asynchronous call with callback
 $test->calculateAgeAsync(new DateTime('8/12/1987'), function($age) {
-    debug("Asynchronous callback says I am " . $age . " year(s) old.");
+    println("Asynchronous callback says I am " . $age . " year(s) old.");
 });
 debug("Make sure im not waiting for asynchronous callback");
 
@@ -66,10 +67,9 @@ debug("Make sure im not waiting for asynchronous callback");
 #$process->in->writeLine('8/12/1987');
 #$process->out->readLine();
 
-#$system->process->waitForChildren();
+$system->process->waitForChildren();
 #$me->out->writeLine( "Parent script terminating now... bye bye!" );
 
-#$system->process->quit();
 #$system->process->close();
 #$system->process->terminate();
 #$system->process->kill();

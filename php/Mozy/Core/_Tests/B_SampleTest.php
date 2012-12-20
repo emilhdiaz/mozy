@@ -37,7 +37,7 @@ class B_SampleTest extends TestScenario {
     }
 
     /**
-     * @expectedException Mozy\Test\TestException
+     * @expectedException Mozy\Core\Test\TestException
      */
     public function testObjectCreation() {
         throw new TestException($this);

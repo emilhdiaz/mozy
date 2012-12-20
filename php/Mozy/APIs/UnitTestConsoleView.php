@@ -41,7 +41,11 @@ class UnitTestConsoleView extends ConsoleView {
     }
 
     public function printResults( UnitTest $unitTest ) {
-        global $framework;
+		global $process;
+
+		$process->out->buffer()->clean();
+
+    	$output = $this->console->output;
 
         $output = ConsoleOutput::construct();
 
@@ -175,9 +179,8 @@ class UnitTestConsoleView extends ConsoleView {
 
         $output->nl();
         $output->line('Test Complete.');
-        $output->nl();
-        return $output;
-    }
+		$process->out->flush()->end();
+	}
 
     private function getPassedTestCases( UnitTest $unitTest ) {
         $array = [];

@@ -27,7 +27,7 @@ abstract class TestScenario extends Object implements Singleton, Testable {
         $this->unitTest = $unitTest;
         $this->requires = _A($this->class->comment->annotation('requires'));
 
-        $class = ReflectionClass::construct('Mozy\Test\TestCase');
+        $class = ReflectionClass::construct('Mozy\Core\Test\TestCase');
         foreach( $this->class->methods(ReflectionMethod::IS_PUBLIC) as $test ) {
             // filter non test methods
             if ( !preg_match(self::TestCaseNameRegex, $test->name) )

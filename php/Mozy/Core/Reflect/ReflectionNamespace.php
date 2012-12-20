@@ -29,9 +29,6 @@ final class ReflectionNamespace implements \Reflector {
         if ( $namespace != $this->name )
             throw new \Exception("Class $class is not from this namespace");
 
-        if ( !class_exists( $class ) )
-            throw new \Exception("Class $class does not exist");
-
         return ReflectionClass::construct($class);
     }
 

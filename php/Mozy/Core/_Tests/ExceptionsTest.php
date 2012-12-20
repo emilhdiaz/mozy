@@ -8,13 +8,13 @@ ini_set('display_errors', true);
 
 class ExceptionsTest extends TestScenario {
 
-    protected $separateProcesses = false;
+    protected $separateProcesses = true;
 
-#    /**
-#     * @expectedException Mozy\Core\ClassNotFoundError
-#     */
-#    public function testClassNotFoundError() {
-#        $obj = RandomMissingClass::construct();
-#    }
+    /**
+     * @expectedException Mozy\Core\FileNotFoundError
+     */
+    public function testClassNotFoundError() {
+        $obj = RandomMissingClass::construct();
+    }
 }
 ?>

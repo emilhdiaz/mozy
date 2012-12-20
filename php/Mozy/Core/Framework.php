@@ -49,11 +49,6 @@ final class Framework extends Object implements Singleton {
     public function callAPI($api, $action, $arguments) {
         $api = 'Mozy\APIs\\'.$api.'API';
 
-        if ( !class_exists($api) ) {
-            #TODO throw API level exception
-            throw new Exception($api);
-        }
-
         $api = $api::construct();
 
         if ( !$api->class->hasMethod($action) ) {

@@ -13,7 +13,7 @@ trait Assertive {
         if ( !preg_match('/^assert\S+/', $name) ) {
             return parent::__call($name, $arguments);
         }
-        return $this->assert( call_user_func_array(['Mozy\Test\Assertion', $name], $arguments) );
+        return $this->assert( call_user_func_array(['Mozy\Core\Test\Assertion', $name], $arguments) );
     }
 
     protected function assert(Assertion $assertion) {

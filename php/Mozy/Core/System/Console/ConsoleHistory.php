@@ -22,7 +22,7 @@ class ConsoleHistory extends Object implements Singleton {
 	}
 
 	public function add( $command, $options = null ) {
-		$this->history[] = trim(_S($command) . ' ' . _S($options));
+		$this->history[] = trim($command . ' ' . $options);
 		$this->pointer = count($this->history);
 	}
 

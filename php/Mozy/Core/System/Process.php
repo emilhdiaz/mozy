@@ -2,6 +2,7 @@
 namespace Mozy\Core\System;
 
 use Mozy\Core\Object;
+use Mozy\Core\System\IO\IO;
 
 class Process extends Object {
 
@@ -74,8 +75,10 @@ class Process extends Object {
 
     public function processResponse() {
         /* Process response */
-        #TODO: process response
-        if ( $this->callback ) {
+		debug("Processing child PID(".$this->id.")");
+
+		#TODO: process response
+        if ( is_callable($this->callback) ) {
             $response = $this->out->readLine();
             $response = unserialize($response);
             $this->callback->__invoke( $response );

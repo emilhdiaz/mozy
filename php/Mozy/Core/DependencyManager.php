@@ -34,14 +34,14 @@ class DependencyManager extends Object implements Singleton {
                 break;
 
             case 'class':
-                return class_exists($dependency);
+                return class_exists($dependency, false);
                 break;
 
             case 'interface':
-                return interface_exists($dependency);
+                return interface_exists($dependency, false);
 
             case 'trait':
-                return trait_exists($dependency);
+                return trait_exists($dependency, false);
                 break;
 
             case 'method':

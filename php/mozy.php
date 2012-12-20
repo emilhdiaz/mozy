@@ -9,7 +9,6 @@ try {
 	define('MOZY_HOME', getenv('MOZY_HOME') . DIRECTORY_SEPARATOR);
 	define('NAMESPACE_SEPARATOR', '\\');
 	define('PHP_TAB', "\t");
-	define('DEBUG', false);
 	defined('STDIN') ?: define('STDIN', fopen('php://stdin'));
 	defined('STDOUT') ?: define('STDOUT', fopen('php://stdout'));
 	defined('STDERR') ?: define('STDERR', fopen('php://stderr'));

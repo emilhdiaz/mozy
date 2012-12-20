@@ -39,7 +39,7 @@ final class ReflectionParameter extends \ReflectionParameter {
             $className = $class->name;
         }
 
-        if ( !ReflectionClass::exists($className) )
+        if ( !$className )
             return;
 
         return ReflectionClass::construct($className);

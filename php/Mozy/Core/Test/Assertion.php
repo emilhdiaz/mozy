@@ -46,7 +46,7 @@ class Assertion extends Object {
 
     public static function assertOutput($expectedOutput) {
     	global $process;
-        $output = $process->output->contents;
+        $output = $process->out->contents;
         $result = (bool) ($expectedOutput == $output);
         $condition = "Expected output '" . $expectedOutput . "', received '" . $output ."'";
         return Assertion::construct('AssertOutput', $condition, $result);
@@ -54,7 +54,7 @@ class Assertion extends Object {
 
     public static function assertNoOutput() {
         global $process;
-        $output = $process->output->contents;
+        $output = $process->out->contents;
         $result = (bool) !$output;
         $condition = "No output expected, received '" . $output ."'";
         return Assertion::construct('AssertNoOutput', $condition, $result);

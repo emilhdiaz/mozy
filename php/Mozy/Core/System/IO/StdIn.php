@@ -37,8 +37,6 @@ class StdIn extends Object implements IO, Singleton {
     public function read() {
     	stream_set_blocking($this->resource, $this->blocking);
     	$data = trim(stream_get_contents($this->resource));
-
-    	debug("Read (" . strlen($data) . " bytes): $data");
         return $data;
     }
 
@@ -51,8 +49,6 @@ class StdIn extends Object implements IO, Singleton {
     public function readLine() {
     	stream_set_blocking($this->resource, $this->blocking);
         $data = trim(fgets($this->resource));
-
-		debug("Read (" . strlen($data) . " bytes): $data");
         return $data;
     }
 

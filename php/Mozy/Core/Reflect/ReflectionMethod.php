@@ -16,7 +16,14 @@ final class ReflectionMethod extends \ReflectionMethod implements Documented {
 
         $namespace = $this->declaringClass->namespace;
         foreach($this->allow as &$class) {
-            $class = ($class == 'all' ? 'all' : $namespace->class($class)->name);
+        	if( $class == 'all' )
+        		continue;
+
+        	if( class_exists($class, false) )
+        		continue;
+
+        	/* Attempt to locate within namespace */
+            $class = $namespace->class($class)->name;
         }
     }
 

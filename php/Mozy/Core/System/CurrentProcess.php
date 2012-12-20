@@ -232,9 +232,9 @@ class CurrentProcess extends Process implements Singleton {
                 debug("Child PID($pid) was already removed from child list. \n");
             }
             else {
-                debug("Child PID($pid) was processed and removed from child list. \n");
                 $this->children[$pid]->processResponse();
                 unset($this->children[$pid]);
+                debug("Child PID($pid) was processed and removed from child list. \n");
             }
 
             /*check for more dead children in this signal */
@@ -332,7 +332,7 @@ class CurrentProcess extends Process implements Singleton {
         /* Create non-blocking pipes */
         if ( $openPipes ) {
             $in  = $this->system->createIO(true);
-            $out = $this->system->createIO(true);
+            $out = $this->system->createIO(false);
         }
 
         /* Fork the parent process */
@@ -344,47 +344,53 @@ class CurrentProcess extends Process implements Singleton {
 
         /* Execute command in child */
         if ($pid == 0) {
-            /* Need to reset children since my children are not children's children! */
-            $this->children = [];
+        	try {
+            	/* Need to reset children since my children are not children's children! */
+            	$this->children = [];
 
-            /* Assign the new PID */
-            $this->id = posix_getpid();
+            	/* Assign the new PID */
+            	$this->id = posix_getpid();
 
-            /* Change the process title */
-            $this->title = 'Mozy Process ' . $this->id;
+            	/* Change the process title */
+            	$this->title = 'Mozy Process ' . $this->id;
 
-            debug("New child process PID(". $this->id .") created. \n");
+            	debug("New child process PID(". $this->id .") created. \n");
 
-            #TODO: need to reinstall signal handlers to allow children to have childran
+            	#TODO: need to reinstall signal handlers to allow children to have childran
 
-            /* Execute internal child branch */
-            if ( $childBranch->class->name == 'Mozy\Core\InternalCommand' ) {
-                $this->in = $in;
-                $this->out = $out;
-                $this->err = $out;
+            	/* Execute internal child branch */
+            	if ( $childBranch->class->name == 'Mozy\Core\System\InternalCommand' ) {
+	                $this->in = $in;
+                	$this->out = $out;
 
-                $response = $childBranch();
-                $this->out->write(serialize($response));
+                	$response = $childBranch();
+                	$this->out->write(serialize($response));
 
-                /* Close the child */
-                $this->close();
-            }
+	                /* Close the child */
+    	            $this->close();
+        	    }
 
-            /* Execute external child branch */
-            if ( $childBranch->class->name == 'Mozy\Core\ExternalCommand' ) {
-                /* Redirect standard files  */
-                fclose(STDIN);
-                fclose(STDOUT);
-                fclose(STDERR);
+	            /* Execute external child branch */
+            	if ( $childBranch->class->name == 'Mozy\Core\System\ExternalCommand' ) {
+	                /* Redirect standard files  */
+                	fclose(STDIN);
+                	fclose(STDOUT);
+                	fclose(STDERR);
 
-                if ( $openPipes ) {
-                    global $STDIN, $STDOUT, $STDERR;
-                    $STDIN  = fopen($in->path, 'r+');
-                    $STDOUT = fopen($out->path, 'r+');
-                    $STDERR = fopen('temp.err', 'w+');
-                }
-                pcntl_exec($childBranch->command, $childBranch->arguments);
-            }
+                	if ( $openPipes ) {
+	                    global $STDIN, $STDOUT, $STDERR;
+                    	$STDIN  = fopen($in->path, 'r+');
+                    	$STDOUT = fopen($out->path, 'r+');
+                    	$STDERR = fopen('temp.err', 'w+');
+                	}
+                	pcntl_exec($childBranch->command, $childBranch->arguments);
+            	}
+        	}
+        	catch(\Exception $exception) {
+#        		print $exception . $exception->getMessage();
+#        		print $exception->getTraceAsString();
+            	$out->write(serialize($exception));
+			}
 
             // make sure child dies here
             exit();

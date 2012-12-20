@@ -75,7 +75,7 @@ class UnitTest extends Object implements Singleton, Testable {
                     continue;
 
                 // filter non Test classes
-                if ( !is_a($testScenario, 'Mozy\Test\TestScenario', true) )
+                if ( !is_a($testScenario, 'Mozy\Core\Test\TestScenario', true) )
                     continue;
 
                 $this->addTestScenario( $testScenario::construct($this) );
