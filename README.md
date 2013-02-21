@@ -6,8 +6,9 @@ Mozy is a PHP framework currently being developed to support Model-View-ViewMode
 
 It differs from existing PHP frameworks in several ways: 
 
+~~~~~~~~~~~~~~~~~~~~~
 No more UI Templating
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 Traditional PHP applications and frameworks include view templates along side their domains and controllers. These templates are 
 processed on the server side and the resulting HTML/CSS/JavaScript is sent back to the browser for rendering. There are several 
 disadvantages to this approach though.
@@ -39,8 +40,9 @@ presentation layers would have zero impact on the flow control logic of the appl
 Mozy is built precisely around this principle. Build a service oriented application core and expose it to any UI you wish. 
 Mozy provides the foundation for defining rich domain models and connecting clients via service oriented interfaces.
 
+~~~~~~~~~~~~~~~~~~~~~
 Domain Focused
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 Mozy helps you focus on the design of your applications's domain and business logic. It employs a powerful Domain 
 Definition Language (DDL) allowing you to be more expressive about your domains and their relationships. By using explicit 
 types for your domain members, Mozy can validate, filter, and convert user data to guarantee correctness of your domain
@@ -64,8 +66,9 @@ organization of your domain logic.
 Mozy is also able to respond to queries about a domain's DDL allowing clients to autogenerate view components from the domain's definition. 
 Imagine working on an application that automatically updates all of it's UIs when a new data member is added to a domain? Nice right? 
 
+~~~~~~~~~~~~~~~~~~~~~
 Cut the middleman
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 Once again, similar to the HTML case, there are many parts of today's web technology stack which are present only because of legacy. 
 One of those cases is the use of a seperate web server. While once a very useful utility for serving up static content, most web applications 
 today could benefit from cutting out this middleman. Mozy, similar to node.js, was developed to support an asynchronous I/O model. Mozy can 
