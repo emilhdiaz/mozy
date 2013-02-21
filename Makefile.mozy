@@ -1,0 +1,69 @@
+TMP=/tmp
+BIN=$(HOME)/bin
+LIB=$(HOME)/lib
+PHP_SOURCE=$(HOME)/$(C9_PID)
+PHP_BIN=$(LIB)/php
+BISON=$(LIB)/bison
+RE2C=$(LIB)/re2c
+
+remove-php:
+#	rm -f $(PHP_SOURCE)/configure
+	rm -f $(BIN)/phar
+	rm -f $(BIN)/phar.phar
+	rm -f $(BIN)/php
+	rm -f $(BIN)/php-cgi
+	rm -f $(BIN)/php-config
+	rm -f $(BIN)/phpize
+
+install-php: remove-php
+#	cd $(PHP_SOURCE); ./buildconf --force
+	cd $(PHP_SOURCE); ./configure \
+		--prefix=$(PHP_SOURCE) \
+		--disable-all \
+		--enable-vld \
+		--enable-debug \
+		--enable-maintainer-zts
+#	make -C $(PHP_SOURCE) clean
+	make -C $(PHP_SOURCE) > make.log 2>&1
+	make -C $(PHP_SOURCE) install
+	ln -s $(PHP_SOURCE)/sapi/cli/php $(BIN)/php
+	ln -s $(PHP_SOURCE)/scripts/php-config $(BIN)/php-config
+	ln -s $(PHP_SOURCE)/scripts/phpize $(BIN)/phpize
+
+remove-vld:
+	rm -rf $(PHP_SOURCE/ext/vld
+
+install-vld:
+	cd $(TMP); wget http://pecl.php.net/get/vld -O "vld.tar.gz"
+	cd $(PHP_SOURCE)/ext; tar -xzf $(TMP)/vld.tar.gz; mv vld-* vld
+
+remove-re2c:
+	rm -rf $(RE2C)
+	rm -f $(BIN)/re2c
+
+install-re2c: remove-re2c
+	mkdir $(RE2C)
+	cd $(TMP); wget http://sourceforge.net/projects/re2c/files/re2c/0.13.5/re2c-0.13.5.tar.gz/download -O "re2c.tar.gz"
+	cd $(LIB); tar xzf $(TMP)/re2c.tar.gz; mv re2c-* $(RE2C)/src
+	cd $(RE2C)/src; ./configure --prefix=$(RE2C)/lib
+	make -C $(RE2C)/src clean
+	make -C $(RE2C)/src
+	make -C $(RE2C)/src install
+	ln -s $(RE2C)/lib/bin/re2c $(BIN)/re2c
+
+remove-bison:
+	rm -rf $(BISON)
+	rm -f $(BIN)/bison
+	rm -f $(BIN)/yacc
+
+install-bison: remove-bison
+	mkdir $(BISON)
+	mkdir $(BISON)/lib
+	cd $(TMP); wget http://ftp.gnu.org/gnu/bison/bison-2.3.tar.gz -O "bison.tar.gz"
+	cd $(LIB); tar xzf $(TMP)/bison.tar.gz; mv bison-* $(BISON)/src
+	cd $(BISON)/src; ./configure --prefix=$(BISON)/lib
+	make -C $(BISON)/src clean
+	make -C $(BISON)/src
+	make -C $(BISON)/src install
+	ln -s $(BISON)/lib/bin/bison $(BIN)/bison
+	ln -s $(BISON)/lib/bin/yacc $(BIN)/yacc

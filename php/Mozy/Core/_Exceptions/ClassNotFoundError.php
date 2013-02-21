@@ -2,10 +2,12 @@
 namespace Mozy\Core;
 
 /**
- * Thrown when a Class file cannot be located.
+ * Thrown when a Class definition cannot be located.
  */
 class ClassNotFoundError extends ResourceNotFoundError {
-    const CODE = 2120;
-    const REGEX = '/^Class \'\S+\' not found.*/';
+
+	public function __construct( $class, Exception $exception = null ) {
+		parent::__construct("Class '$class' not found", $exception);
+    }
 }
 ?>

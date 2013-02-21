@@ -1,13 +1,14 @@
 <?php
-namespace Mozy\Core;
+namespace Mozy\Core\Test;
 
 use Mozy\Core\Test\TestScenario;
 use Mozy\Core\Test\TestException;
 
 /**
  * @requires PHP 5.4.9
+ * @ignore
  */
-class B_SampleTest extends TestScenario {
+class A_SampleTest extends TestScenario {
 
     public $object;
 
@@ -21,36 +22,24 @@ class B_SampleTest extends TestScenario {
         unset($this->fixture->object);
     }
 
-    public function testIncomplete() {
-
-    }
-
-    public function testFailure() {
-        $this->assertTrue(false);
-    }
-
     public function providePassword() {
         return [
             123,
-            456
+            123,
+            456,
+            true,
+            123,
+            false
         ];
-    }
-
-    /**
-     * @expectedException Mozy\Core\Test\TestException
-     */
-    public function testObjectCreation() {
-        throw new TestException($this);
     }
 
     /**
      * This is a description
      * and a second line
      *
-     * @dependsOn testObjectCreation
      * @provider providePassword
      */
-    public function testSomething($password) {
+    public function testSomethingElse($password) {
         # lookup user password
         $pass = 123;
 

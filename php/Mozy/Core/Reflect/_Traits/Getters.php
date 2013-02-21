@@ -15,7 +15,7 @@ trait Getters {
 
         /* Default (public read access) */
         if ( !property_exists($class, $name) ) {
-            throw new UndefinedPropertyException($name);
+            throw new UndefinedPropertyError($name, $class);
         }
 
         return $this->$name;

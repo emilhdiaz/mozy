@@ -70,15 +70,21 @@ class UnitTest extends Object implements Singleton, Testable {
                 if ( !($testScenario = get_class_from_filename($filePath)) )
                 	continue;
 
-                // filter non Test files
+                // filter non test files
                 if ( !preg_match(self::TestScenarioNameRegex, $testScenario) )
                     continue;
 
-                // filter non Test classes
+                // filter non test scenario classes
                 if ( !is_a($testScenario, 'Mozy\Core\Test\TestScenario', true) )
                     continue;
 
-                $this->addTestScenario( $testScenario::construct($this) );
+                $testScenario = $testScenario::construct($this);
+
+                // filter @ignored test scenarios
+                if( $testScenario->class->comment->annotation('ignore') )
+                	continue;
+
+                $this->addTestScenario( $testScenario );
             }
         } catch (\UnexpectedValueException $e) {
             throw $e;

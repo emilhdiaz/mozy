@@ -36,7 +36,7 @@ trait Callers {
             return $method->invokeArgs($this, $arguments);
         }
 
-        throw new UndefinedMethodException($name);
+        throw new UndefinedMethodError($name, $this);
     }
 }
 ?>

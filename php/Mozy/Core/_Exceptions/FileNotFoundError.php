@@ -5,6 +5,9 @@ namespace Mozy\Core;
  * Thrown when a File cannot be located.
  */
 class FileNotFoundError extends ResourceNotFoundError {
-    const CODE = 2110;
+
+	public function __construct( $file, Exception $exception = null ) {
+		parent::__construct("File '$file' not found", $exception);
+    }
 }
 ?>

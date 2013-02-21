@@ -1,6 +1,7 @@
 <?php
 namespace Mozy\Core;
 
+
 use Mozy\Core\System\System;
 
 final class Framework extends Object implements Singleton {
@@ -112,9 +113,6 @@ function errorHandler($code, $msg, $file, $line, $errcontext) {
 #        if ( preg_match(Exception::MissingImplementationRegex, $msg) )
 #            exceptionHandler(new MissingImplementationException($msg, null, $file, $line));
 #
-#        if ( preg_match(Exception::UndefinedMethodRegex, $msg) )
-#            exceptionHandler(new UndefinedMethodException($msg, null, $file, $line));
-#
 #        if ( preg_match(Exception::UnauthorizedMethodAccessRegex, $msg) )
 #            exceptionHandler(new UnauthorizedMethodAccessException($msg, null, $file, $line));
 #
@@ -158,15 +156,13 @@ function errorHandler($code, $msg, $file, $line, $errcontext) {
 #        if ( preg_match(Exception::NullDereferenceRegex, $msg) )
 #            exceptionHandler(new NullReferenceException($msg, null, $file, $line));
 #
-#        if ( preg_match(Exception::UndefinedPropertyRegex, $msg) )
-#            exceptionHandler(new UndefinedPropertyException($msg, null, $file, $line));
-#
 #        if ( preg_match(Exception::UndefinedConstantRegex, $msg) )
 #            exceptionHandler(new UndefinedConstantException($msg, null, $file, $line));
     }
 
 	$text = "UNHANDLED ERROR: " . FriendlyErrorType($code) ."- $msg in file $file on line $line";
-	throw new \Exception($text);
+	//throw new \Exception($text);
+	return false;
 }
 
 function fatalErrorHandler() {
@@ -176,7 +172,7 @@ function fatalErrorHandler() {
 		$file = $e['file'];
 		$line = $e['line'];
 		$text = "FATAL ERROR: " . FriendlyErrorType($code) ."- $msg in file $file on line $line";
-		throw new \Exception($text);
+		throw new \ErrorException($msg, $code, $code, $file, $line);
     }
 }
 ?>

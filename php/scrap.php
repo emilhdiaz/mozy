@@ -29,6 +29,11 @@ class Test extends Object {
     }
 }
 
+CONSTANT;
+exit();
+
+Test::constant;
+
 $system = System::construct();
 $me = $system->process;
 $me->out->writeLine( "Starting parent process with PID(".$me->id.")" );

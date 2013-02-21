@@ -12,7 +12,7 @@ trait Callers {
             return call_user_func_array([$this, $getter], $arguments);
         }
 
-        throw new UndefinedMethodException($name);
+        throw new UndefinedMethodError($name, $this);
     }
 }
 ?>

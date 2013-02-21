@@ -4,17 +4,54 @@ namespace Mozy\Core;
 use Mozy\Core\Test\TestScenario;
 use Mozy\Core\Test\TestException;
 
-ini_set('display_errors', true);
-
 class ExceptionsTest extends TestScenario {
 
-    protected $separateProcesses = true;
+    protected $separateProcesses = false;
 
     /**
-     * @expectedException Mozy\Core\FileNotFoundError
+     * @expectedException Mozy\Core\ResourceNotFoundError
+     */
+    public function testResourceNotFoundError() {
+        RandomMissingClass::construct();
+    }
+
+    /**
+     * @expectedException Mozy\Core\ClassNotFoundError
      */
     public function testClassNotFoundError() {
-        $obj = RandomMissingClass::construct();
+    	MissingClass::construct();
     }
+
+    /**
+     * @expectedException Mozy\Core\InterfaceNotFoundError
+     */
+    public function testInterfaceNotFoundError() {
+    	MissingInterface::construct();
+    }
+
+    /**
+     * @expectedException Mozy\Core\TraitNotFoundError
+     */
+    public function testTraitNotFoundError() {
+    	MissingTrait::construct();
+    }
+
+    public function testFileNotFoundError() {
+
+    }
+
+    /**
+     * @expectedException Mozy\Core\UndefinedMethodError
+     */
+    public function testUndefinedMethodError() {
+    	$this->undefinedMethod();
+    }
+
+    /**
+     * @expectedException Mozy\Core\UndefinedPropertyError
+     */
+     public function testUndefinedPropertyError() {
+     	$this->undefinedProperty;
+     }
 }
 ?>

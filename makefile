@@ -35,6 +35,7 @@ install-php:
 		--with-xsl \
 		--with-tsrm-pthreads \
 		--with-openssl \
+		--enable-debug
 		--enable-pcntl \
 		--enable-sysvsem \
 		--enable-sysvshm \

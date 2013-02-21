@@ -70,6 +70,10 @@ class Console extends Server {
 					HelpView::construct($this)->render();
 					break;
 
+				case 'test':
+					RandomClass::construct();
+					break;
+
 				case 'debug':
 					$this->history->add($command);
 					self::$debug = true;

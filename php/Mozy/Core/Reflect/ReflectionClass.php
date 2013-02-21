@@ -104,7 +104,7 @@ class ReflectionClass extends \ReflectionClass implements Documented {
     public function validate() {
         /* Singleton Implementation Check */
         if ( $this->isSingleton() && $this->constructor->isPublic() ) {
-            throw new SingletonImplementationException($this->name);
+            throw new SingletonImplementationError($this->name);
         }
     }
 

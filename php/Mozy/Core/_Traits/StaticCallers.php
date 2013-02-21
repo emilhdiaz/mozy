@@ -29,7 +29,7 @@ trait StaticCallers {
         if ( in_array( $name, ['construct', '_construct_'] ) )
             return Factory::instance(ReflectionClass::construct($class), $arguments);
 
-        throw new UndefinedMethodException($name);
+        throw new UndefinedMethodError($name, $class);
     }
 }
 ?>

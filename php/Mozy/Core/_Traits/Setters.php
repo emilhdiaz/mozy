@@ -24,7 +24,7 @@ trait Setters {
 
         /* Default private write access */
         if ( !property_exists($class, $name) ) {
-            throw new UndefinedPropertyException($name);
+            throw new UndefinedPropertyError($name, $class);
         }
 
         throw new UnauthorizedPropertyAccessException($name);

@@ -65,7 +65,7 @@ abstract class Autoloader {
         }
 
         /* At this point the file was not found */
-        throw new FileNotFoundError("File not found for resource '$resource'");
+        throw new ResourceNotFoundError($resource);
     }
 
     /**
